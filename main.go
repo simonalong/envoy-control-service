@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/isyscore/isc-gobase/config"
+
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	clusterservice "github.com/envoyproxy/go-control-plane/envoy/service/cluster/v3"
 	discoverygrpc "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
@@ -16,8 +18,10 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/server/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/test/v3"
-	baseServer "github.com/isyscore/isc-gobase/server"
 	"time"
+
+	"github.com/isyscore/isc-gobase/logger"
+	baseServer "github.com/isyscore/isc-gobase/server"
 
 	cluster "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -31,11 +35,10 @@ import (
 
 	hcm "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 
+	"net"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
-	"log"
-	"net"
-	"os"
 )
 
 const (
@@ -57,15 +60,44 @@ const (
 func main() {
 	node := corev3.Node{Id: "test-id", Cluster: "test-cluster"}
 	ctx := context.Background()
-	port := 18000
 
-	// Create a cache
+	// 创建数据缓冲处理
 	snapshotCacheData := cache.NewSnapshotCache(false, cache.IDHash{}, nil)
 
-	// Run the xDS server
-	cb := &test.Callbacks{Debug: true}
-	srv := server.NewServer(ctx, snapshotCacheData, cb)
+	// 启动grpc服务
+	runGrpcServer(ctx, snapshotCacheData, config.GetValueInt("envoy.port"))
 
+	// 测试数据发送
+	testSendOneData(snapshotCacheData, ctx, &node)
+
+	// 启动web
+	baseServer.Run()
+}
+
+func testSendOneData(snapshotCacheData cache.SnapshotCache, ctx context.Context, node *corev3.Node) {
+	snap, _ := cache.NewSnapshot("2",
+		map[resource.Type][]types.Resource{
+			resource.ClusterType:  {makeCluster(ClusterName)},
+			resource.RouteType:    {makeRoute(RouteName, ClusterName)},
+			resource.ListenerType: {makeHTTPListener(ListenerName, RouteName)},
+		},
+	)
+	if err := snap.Consistent(); err != nil {
+		logger.Error("数据持久化异常", err)
+		return
+	}
+
+	if err := snapshotCacheData.SetSnapshot(ctx, node.GetId(), snap); err != nil {
+		logger.Error("数据发送异常", err)
+	}
+}
+
+func getEnvoyService(ctx context.Context, snapshotCacheData cache.SnapshotCache) server.Server {
+	cb := &test.Callbacks{Debug: true}
+	return server.NewServer(ctx, snapshotCacheData, cb)
+}
+
+func runGrpcServer(ctx context.Context, snapshotCacheData cache.SnapshotCache, port int) {
 	var grpcOptions []grpc.ServerOption
 	grpcOptions = append(grpcOptions,
 		grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams),
@@ -79,11 +111,7 @@ func main() {
 		}),
 	)
 	grpcServer := grpc.NewServer(grpcOptions...)
-
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
-	if err != nil {
-		log.Fatal(err)
-	}
+	srv := getEnvoyService(ctx, snapshotCacheData)
 
 	discoverygrpc.RegisterAggregatedDiscoveryServiceServer(grpcServer, srv)
 	endpointservice.RegisterEndpointDiscoveryServiceServer(grpcServer, srv)
@@ -93,32 +121,18 @@ func main() {
 	secretservice.RegisterSecretDiscoveryServiceServer(grpcServer, srv)
 	runtimeservice.RegisterRuntimeDiscoveryServiceServer(grpcServer, srv)
 
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		logger.Error("启动端口失败: %d", port, err)
+		return
+	}
+
 	go func() {
-		log.Printf("management server listening on %d\n", port)
+		logger.Info("grpc服务启动监听端口")
 		if err = grpcServer.Serve(lis); err != nil {
-			log.Println(err)
+			logger.Error("启动grpc异常", err)
 		}
 	}()
-
-	// Create the snapshot that we'll serve to Envoy
-	snap, _ := cache.NewSnapshot("2",
-		map[resource.Type][]types.Resource{
-			resource.ClusterType:  {makeCluster(ClusterName)},
-			resource.RouteType:    {makeRoute(RouteName, ClusterName)},
-			resource.ListenerType: {makeHTTPListener(ListenerName, RouteName)},
-		},
-	)
-	if err := snap.Consistent(); err != nil {
-		os.Exit(1)
-	}
-
-	// Add the snapshot to the cache
-	if err := snapshotCacheData.SetSnapshot(ctx, node.GetId(), snap); err != nil {
-		fmt.Println("错误，", err)
-		os.Exit(1)
-	}
-
-	baseServer.Run()
 }
 
 func makeCluster(clusterName string) *cluster.Cluster {
@@ -201,7 +215,7 @@ func makeHTTPListener(listenerName string, route string) *listener.Listener {
 	}
 	pbst, err := anypb.New(manager)
 	if err != nil {
-		panic(err)
+		logger.Error("配置http连接失败")
 	}
 
 	return &listener.Listener{

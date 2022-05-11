@@ -3,7 +3,7 @@ module isc-envoy-control-service
 go 1.18
 
 require (
-	github.com/isyscore/isc-gobase v1.0.9
+	github.com/isyscore/isc-gobase v1.0.8
 	google.golang.org/grpc v1.36.0
 	google.golang.org/protobuf v1.27.1
 )

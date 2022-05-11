@@ -65,8 +65,8 @@ github.com/gorilla/websocket v1.5.0/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/ad
 github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFbcEtjT1g+wF4CSlocrBnw=
 github.com/iris-contrib/go.uuid v2.0.0+incompatible h1:XZubAYg61/JwnJNbZilGjf3b3pB80+OQg2qf6c8BfWE=
 github.com/iris-contrib/go.uuid v2.0.0+incompatible/go.mod h1:iz2lgM/1UnEf1kP0L/+fafWORmlnuysV2EMP8MW+qe0=
-github.com/isyscore/isc-gobase v1.0.9 h1:PW79OOcDrY2HjW8HeGHj82PU5Qn59kFdjnPptDNSm48=
-github.com/isyscore/isc-gobase v1.0.9/go.mod h1:dQCqb4TDPSGDDmU7XBjLEhKeMbZkdLVadSsMhtAOEIs=
+github.com/isyscore/isc-gobase v1.0.8 h1:pBAcOtg+A/EBrlF8EeBuZu7XVkTs2JdnHMoES8cIGtU=
+github.com/isyscore/isc-gobase v1.0.8/go.mod h1:dQCqb4TDPSGDDmU7XBjLEhKeMbZkdLVadSsMhtAOEIs=
 github.com/json-iterator/go v1.1.9 h1:9yzud/Ht36ygwatGx56VwCZtlI/2AD15T1X2sjSuGns=
 github.com/json-iterator/go v1.1.9/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
