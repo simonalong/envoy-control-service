@@ -1,0 +1,19 @@
+# application.yml 内容
+api-module: core/envoy
+
+base:
+  api:
+    # api前缀
+    prefix: /api
+  application:
+    # 应用名称
+    name: isc-envoy-control-service
+  server:
+    # 是否启用，默认：true
+    enable: false
+    # 端口号
+    port: 32400
+    # web框架gin的配置
+    gin:
+      # 有三种模式：debug/release/test
+      mode: release
