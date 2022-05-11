@@ -10,7 +10,7 @@ base:
     name: isc-envoy-control-service
   server:
     # 是否启用，默认：true
-    enable: false
+    enable: true
     # 端口号
     port: 32400
     # web框架gin的配置

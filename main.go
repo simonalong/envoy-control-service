@@ -16,6 +16,7 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/server/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/test/v3"
+	baseServer "github.com/isyscore/isc-gobase/server"
 	"time"
 
 	cluster "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
@@ -117,7 +118,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	time.Sleep(1000000 * time.Hour)
+	baseServer.Run()
 }
 
 func makeCluster(clusterName string) *cluster.Cluster {
