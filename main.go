@@ -62,18 +62,6 @@ func main() {
 	// Create a cache
 	snapshotCacheData := cache.NewSnapshotCache(false, cache.IDHash{}, nil)
 
-	// Create the snapshot that we'll serve to Envoy
-	snap, _ := cache.NewSnapshot("2",
-		map[resource.Type][]types.Resource{
-			resource.ClusterType:  {makeCluster(ClusterName)},
-			resource.RouteType:    {makeRoute(RouteName, ClusterName)},
-			resource.ListenerType: {makeHTTPListener(ListenerName, RouteName)},
-		},
-	)
-	if err := snap.Consistent(); err != nil {
-		os.Exit(1)
-	}
-
 	// Run the xDS server
 	cb := &test.Callbacks{Debug: true}
 	srv := server.NewServer(ctx, snapshotCacheData, cb)
@@ -111,6 +99,18 @@ func main() {
 			log.Println(err)
 		}
 	}()
+
+	// Create the snapshot that we'll serve to Envoy
+	snap, _ := cache.NewSnapshot("2",
+		map[resource.Type][]types.Resource{
+			resource.ClusterType:  {makeCluster(ClusterName)},
+			resource.RouteType:    {makeRoute(RouteName, ClusterName)},
+			resource.ListenerType: {makeHTTPListener(ListenerName, RouteName)},
+		},
+	)
+	if err := snap.Consistent(); err != nil {
+		os.Exit(1)
+	}
 
 	// Add the snapshot to the cache
 	if err := snapshotCacheData.SetSnapshot(ctx, node.GetId(), snap); err != nil {
