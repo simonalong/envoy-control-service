@@ -3,7 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/isyscore/isc-gobase/config"
+	"github.com/isyscore/isc-gobase/redis"
+	"github.com/isyscore/isc-gobase/server/rsp"
+	"isc-envoy-control-service/router"
+	"isc-envoy-control-service/service"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	clusterservice "github.com/envoyproxy/go-control-plane/envoy/service/cluster/v3"
@@ -70,16 +75,15 @@ func main() {
 	// 测试数据发送
 	testSendOneData(snapshotCacheData, ctx, &node)
 
-	// 启动web
 	baseServer.Run()
 }
 
 func testSendOneData(snapshotCacheData cache.SnapshotCache, ctx context.Context, node *corev3.Node) {
 	snap, _ := cache.NewSnapshot("2",
 		map[resource.Type][]types.Resource{
-			resource.ClusterType:  {makeCluster(ClusterName)},
-			resource.RouteType:    {makeRoute(RouteName, ClusterName)},
-			resource.ListenerType: {makeHTTPListener(ListenerName, RouteName)},
+			resource.ListenerType: {service.GetListener(ListenerName, RouteName)},
+			resource.RouteType:    {service.GetRouter(RouteName, ClusterName)},
+			resource.ClusterType:  {service.GetCluster(ClusterName)},
 		},
 	)
 	if err := snap.Consistent(); err != nil {
@@ -90,11 +94,6 @@ func testSendOneData(snapshotCacheData cache.SnapshotCache, ctx context.Context,
 	if err := snapshotCacheData.SetSnapshot(ctx, node.GetId(), snap); err != nil {
 		logger.Error("数据发送异常", err)
 	}
-}
-
-func getEnvoyService(ctx context.Context, snapshotCacheData cache.SnapshotCache) server.Server {
-	cb := &test.Callbacks{Debug: true}
-	return server.NewServer(ctx, snapshotCacheData, cb)
 }
 
 func runGrpcServer(ctx context.Context, snapshotCacheData cache.SnapshotCache, port int) {
@@ -111,13 +110,15 @@ func runGrpcServer(ctx context.Context, snapshotCacheData cache.SnapshotCache, p
 		}),
 	)
 	grpcServer := grpc.NewServer(grpcOptions...)
-	srv := getEnvoyService(ctx, snapshotCacheData)
+	cb := &test.Callbacks{Debug: true}
+	srv := server.NewServer(ctx, snapshotCacheData, cb)
+
+	listenerservice.RegisterListenerDiscoveryServiceServer(grpcServer, srv)
+	routeservice.RegisterRouteDiscoveryServiceServer(grpcServer, srv)
+	clusterservice.RegisterClusterDiscoveryServiceServer(grpcServer, srv)
+	endpointservice.RegisterEndpointDiscoveryServiceServer(grpcServer, srv)
 
 	discoverygrpc.RegisterAggregatedDiscoveryServiceServer(grpcServer, srv)
-	endpointservice.RegisterEndpointDiscoveryServiceServer(grpcServer, srv)
-	clusterservice.RegisterClusterDiscoveryServiceServer(grpcServer, srv)
-	routeservice.RegisterRouteDiscoveryServiceServer(grpcServer, srv)
-	listenerservice.RegisterListenerDiscoveryServiceServer(grpcServer, srv)
 	secretservice.RegisterSecretDiscoveryServiceServer(grpcServer, srv)
 	runtimeservice.RegisterRuntimeDiscoveryServiceServer(grpcServer, srv)
 
@@ -133,129 +134,4 @@ func runGrpcServer(ctx context.Context, snapshotCacheData cache.SnapshotCache, p
 			logger.Error("启动grpc异常", err)
 		}
 	}()
-}
-
-func makeCluster(clusterName string) *cluster.Cluster {
-	return &cluster.Cluster{
-		Name:                 clusterName,
-		ConnectTimeout:       durationpb.New(5 * time.Second),
-		ClusterDiscoveryType: &cluster.Cluster_Type{Type: cluster.Cluster_LOGICAL_DNS},
-		LbPolicy:             cluster.Cluster_ROUND_ROBIN,
-		LoadAssignment:       makeEndpoint(clusterName),
-		DnsLookupFamily:      cluster.Cluster_V4_ONLY,
-	}
-}
-
-func makeEndpoint(clusterName string) *endpoint.ClusterLoadAssignment {
-	return &endpoint.ClusterLoadAssignment{
-		ClusterName: clusterName,
-		Endpoints: []*endpoint.LocalityLbEndpoints{{
-			LbEndpoints: []*endpoint.LbEndpoint{{
-				HostIdentifier: &endpoint.LbEndpoint_Endpoint{
-					Endpoint: &endpoint.Endpoint{
-						Address: &core.Address{
-							Address: &core.Address_SocketAddress{
-								SocketAddress: &core.SocketAddress{
-									Protocol: core.SocketAddress_TCP,
-									Address:  UpstreamHost,
-									PortSpecifier: &core.SocketAddress_PortValue{
-										PortValue: UpstreamPort,
-									},
-								},
-							},
-						},
-					},
-				},
-			}},
-		}},
-	}
-}
-
-func makeRoute(routeName string, clusterName string) *route.RouteConfiguration {
-	return &route.RouteConfiguration{
-		Name: routeName,
-		VirtualHosts: []*route.VirtualHost{{
-			Name:    "local_service",
-			Domains: []string{"*"},
-			Routes: []*route.Route{{
-				Match: &route.RouteMatch{
-					PathSpecifier: &route.RouteMatch_Prefix{
-						Prefix: "/",
-					},
-				},
-				Action: &route.Route_Route{
-					Route: &route.RouteAction{
-						ClusterSpecifier: &route.RouteAction_Cluster{
-							Cluster: clusterName,
-						},
-						HostRewriteSpecifier: &route.RouteAction_HostRewriteLiteral{
-							HostRewriteLiteral: UpstreamHost,
-						},
-					},
-				},
-			}},
-		}},
-	}
-}
-
-func makeHTTPListener(listenerName string, route string) *listener.Listener {
-	// HTTP filter configuration
-	manager := &hcm.HttpConnectionManager{
-		CodecType:  hcm.HttpConnectionManager_AUTO,
-		StatPrefix: "http",
-		RouteSpecifier: &hcm.HttpConnectionManager_Rds{
-			Rds: &hcm.Rds{
-				ConfigSource:    makeConfigSource(),
-				RouteConfigName: route,
-			},
-		},
-		HttpFilters: []*hcm.HttpFilter{{
-			Name: wellknown.Router,
-		}},
-	}
-	pbst, err := anypb.New(manager)
-	if err != nil {
-		logger.Error("配置http连接失败")
-	}
-
-	return &listener.Listener{
-		Name: listenerName,
-		Address: &core.Address{
-			Address: &core.Address_SocketAddress{
-				SocketAddress: &core.SocketAddress{
-					Protocol: core.SocketAddress_TCP,
-					Address:  "0.0.0.0",
-					PortSpecifier: &core.SocketAddress_PortValue{
-						PortValue: ListenerPort,
-					},
-				},
-			},
-		},
-		FilterChains: []*listener.FilterChain{{
-			Filters: []*listener.Filter{{
-				Name: wellknown.HTTPConnectionManager,
-				ConfigType: &listener.Filter_TypedConfig{
-					TypedConfig: pbst,
-				},
-			}},
-		}},
-	}
-}
-
-func makeConfigSource() *core.ConfigSource {
-	source := &core.ConfigSource{}
-	source.ResourceApiVersion = resource.DefaultAPIVersion
-	source.ConfigSourceSpecifier = &core.ConfigSource_ApiConfigSource{
-		ApiConfigSource: &core.ApiConfigSource{
-			TransportApiVersion:       resource.DefaultAPIVersion,
-			ApiType:                   core.ApiConfigSource_GRPC,
-			SetNodeOnFirstMessageOnly: true,
-			GrpcServices: []*core.GrpcService{{
-				TargetSpecifier: &core.GrpcService_EnvoyGrpc_{
-					EnvoyGrpc: &core.GrpcService_EnvoyGrpc{ClusterName: "xds_cluster"},
-				},
-			}},
-		},
-	}
-	return source
 }
