@@ -3,11 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/isyscore/isc-gobase/config"
-	"github.com/isyscore/isc-gobase/redis"
-	"github.com/isyscore/isc-gobase/server/rsp"
-	"isc-envoy-control-service/router"
 	"isc-envoy-control-service/service"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -27,18 +23,6 @@ import (
 
 	"github.com/isyscore/isc-gobase/logger"
 	baseServer "github.com/isyscore/isc-gobase/server"
-
-	cluster "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
-	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
-	endpoint "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
-	listener "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
-	route "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
-
-	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
-	"google.golang.org/protobuf/types/known/anypb"
-	"google.golang.org/protobuf/types/known/durationpb"
-
-	hcm "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 
 	"net"
 
@@ -63,7 +47,6 @@ const (
 )
 
 func main() {
-	node := corev3.Node{Id: "test-id", Cluster: "test-cluster"}
 	ctx := context.Background()
 
 	// 创建数据缓冲处理
@@ -73,7 +56,7 @@ func main() {
 	runGrpcServer(ctx, snapshotCacheData, config.GetValueInt("envoy.port"))
 
 	// 测试数据发送
-	testSendOneData(snapshotCacheData, ctx, &node)
+	//testSendOneData(snapshotCacheData, ctx, &node)
 
 	baseServer.Run()
 }

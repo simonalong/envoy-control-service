@@ -17,3 +17,24 @@ base:
     gin:
       # 有三种模式：debug/release/test
       mode: debug
+
+  logger:
+    # 日志root级别：trace/debug/info/warn/error/fatal/panic，默认：info
+    level: info
+    # 日志颜色
+    color:
+      # 启用：true/false，默认：false
+      enable: false
+    split:
+      # 日志是否启用切分：true/false，默认false
+      enable: false
+      # 日志拆分的单位：MB
+      size: 300
+    max:
+      ## 日志文件最大保留天数
+      history: 7
+    ## 日志文件目录，默认工程目录的logs文件夹
+    dir: ./logs/
+
+envoy:
+  port: 18000

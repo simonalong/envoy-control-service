@@ -35,10 +35,7 @@ base:
       history: 7
     ## 日志文件目录，默认工程目录的logs文件夹
     dir: ./logs/
-  redis:
-    enable: true
-    standalone:
-      addr: localhost:16379
 
+# 给envoy开启的端口
 envoy:
   port: 18000

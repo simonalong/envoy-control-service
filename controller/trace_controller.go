@@ -6,7 +6,7 @@ import (
 	"github.com/isyscore/isc-gobase/server/rsp"
 )
 
-func TraceRouter() {
+func TraceController() {
 	baseServer.Get("group1/data", addTrace)
 }
 

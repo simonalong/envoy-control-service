@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/gin-gonic/gin v1.7.7
-	github.com/isyscore/isc-gobase v1.0.14-0.20220523122807-ef2cfa4b4d7a
+	github.com/isyscore/isc-gobase v1.1.1-0.20220530074538-5c8a0829ff92
 	google.golang.org/grpc v1.36.0
 	google.golang.org/protobuf v1.27.1
 )
@@ -38,7 +38,7 @@ require (
 require (
 	github.com/envoyproxy/go-control-plane v0.10.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/protobuf v1.5.2
 	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/text v0.3.7 // indirect
