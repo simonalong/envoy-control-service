@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/gin-gonic/gin v1.7.7
-	github.com/isyscore/isc-gobase v1.1.1-0.20220530074538-5c8a0829ff92
+	github.com/isyscore/isc-gobase v1.1.1-0.20220531130457-c8c8fe37f471
 	google.golang.org/grpc v1.36.0
 	google.golang.org/protobuf v1.27.1
 )

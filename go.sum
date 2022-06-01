@@ -79,6 +79,8 @@ github.com/isyscore/isc-gobase v1.0.14-0.20220523122807-ef2cfa4b4d7a h1:XwrnEQ9q
 github.com/isyscore/isc-gobase v1.0.14-0.20220523122807-ef2cfa4b4d7a/go.mod h1:Jg2zvlKr51614TTyOwnK0HBuhJ23LmLpDzcwBirNGpQ=
 github.com/isyscore/isc-gobase v1.1.1-0.20220530074538-5c8a0829ff92 h1:UzM76mMB1n6vuEHz872vGKWZrZFsAedkxOG3YeKyxOM=
 github.com/isyscore/isc-gobase v1.1.1-0.20220530074538-5c8a0829ff92/go.mod h1:Jg2zvlKr51614TTyOwnK0HBuhJ23LmLpDzcwBirNGpQ=
+github.com/isyscore/isc-gobase v1.1.1-0.20220531130457-c8c8fe37f471 h1:NOP6gwM5qc5beWyMm02IwjA0Uh0O1FJIV9XVv/O+1lQ=
+github.com/isyscore/isc-gobase v1.1.1-0.20220531130457-c8c8fe37f471/go.mod h1:Jg2zvlKr51614TTyOwnK0HBuhJ23LmLpDzcwBirNGpQ=
 github.com/json-iterator/go v1.1.9 h1:9yzud/Ht36ygwatGx56VwCZtlI/2AD15T1X2sjSuGns=
 github.com/json-iterator/go v1.1.9/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=

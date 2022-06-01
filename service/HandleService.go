@@ -10,16 +10,16 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
-
 	"github.com/isyscore/isc-gobase/logger"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"time"
 )
 
+var CacheData cache.SnapshotCache
+
 func AddListener(cluster, id, listenerName, routeName, clusterName, upstreamHost string, upstreamPort uint32) {
 	node := corev3.Node{Id: id, Cluster: cluster}
 	// 创建数据缓冲处理
-	snapshotCacheData := cache.NewSnapshotCache(false, cache.IDHash{}, nil)
 
 	ctx := context.Background()
 	snap, _ := cache.NewSnapshot("2",
@@ -34,7 +34,7 @@ func AddListener(cluster, id, listenerName, routeName, clusterName, upstreamHost
 		return
 	}
 
-	if err := snapshotCacheData.SetSnapshot(ctx, node.GetId(), snap); err != nil {
+	if err := CacheData.SetSnapshot(ctx, node.GetId(), snap); err != nil {
 		logger.Error("数据发送异常", err)
 	}
 }

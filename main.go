@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/isyscore/isc-gobase/config"
+	"isc-envoy-control-service/router"
 	"isc-envoy-control-service/service"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -50,13 +51,14 @@ func main() {
 	ctx := context.Background()
 
 	// 创建数据缓冲处理
-	snapshotCacheData := cache.NewSnapshotCache(false, cache.IDHash{}, nil)
+	service.CacheData = cache.NewSnapshotCache(false, cache.IDHash{}, nil)
 
 	// 启动grpc服务
-	runGrpcServer(ctx, snapshotCacheData, config.GetValueInt("envoy.port"))
+	runGrpcServer(ctx, service.CacheData, config.GetValueInt("envoy.port"))
 
 	// 测试数据发送
 	//testSendOneData(snapshotCacheData, ctx, &node)
+	router.Register()
 
 	baseServer.Run()
 }
