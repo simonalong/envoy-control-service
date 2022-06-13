@@ -12,23 +12,46 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/isyscore/isc-gobase/logger"
 	"google.golang.org/protobuf/types/known/durationpb"
+	"isc-envoy-control-service/pojo/bo"
 	"time"
 )
 
 var CacheData cache.SnapshotCache
 
-func AddListener(cluster, id, listenerName, routeName, clusterName, upstreamHost string, upstreamPort uint32) {
-	node := corev3.Node{Id: id, Cluster: cluster}
-	// 创建数据缓冲处理
+func AddCluster(clusterBo *bo.ClusterBo) *cluster.Cluster {
+	return getCluster(clusterBo)
+}
+
+func AddRouter(routeBo *bo.RouterBo) *route.RouteConfiguration {
+	return getRouter(routeBo)
+}
+
+func AddListener(listenerBo *bo.ListenerBo) *listener.Listener {
+	return getListener(listenerBo)
+}
+
+func Send(insertBo *bo.InsertBo) {
+	node := corev3.Node{Id: insertBo.Id, Cluster: insertBo.Cluster}
 
 	ctx := context.Background()
-	snap, _ := cache.NewSnapshot("2",
-		map[resource.Type][]types.Resource{
-			resource.ListenerType: {getListener(listenerName, routeName)},
-			resource.RouteType:    {getRouter(routeName, clusterName)},
-			resource.ClusterType:  {getCluster(clusterName, upstreamHost, upstreamPort)},
-		},
-	)
+	resourcesMap := map[resource.Type][]types.Resource{}
+	if len(insertBo.ListenerInfos) != 0 {
+		resourcesMap[resource.ListenerType] = insertBo.ListenerInfos
+	}
+
+	if len(insertBo.ListenerInfos) != 0 {
+		resourcesMap[resource.RouteType] = insertBo.RouteInfos
+	}
+
+	if len(insertBo.ListenerInfos) != 0 {
+		resourcesMap[resource.ClusterType] = insertBo.ClusterInfos
+	}
+
+	if len(insertBo.ListenerInfos) != 0 {
+		resourcesMap[resource.EndpointType] = insertBo.EndpointInfos
+	}
+
+	snap, _ := cache.NewSnapshot(insertBo.Version, resourcesMap)
 	if err := snap.Consistent(); err != nil {
 		logger.Error("数据持久化异常", err)
 		return
@@ -39,64 +62,69 @@ func AddListener(cluster, id, listenerName, routeName, clusterName, upstreamHost
 	}
 }
 
-func getListener(listenerName, routeName string) *listener.Listener {
+func getListener(listenerBo *bo.ListenerBo) *listener.Listener {
 	return &listener.Listener{
 		// 监听器名称
-		Name: listenerName,
+		Name: listenerBo.ListenerName,
 
 		// 监听器地址，必须唯一
-		Address: getListenerAddress(),
+		Address: getListenerAddress(listenerBo.ListenerPort),
 
 		// -------------------------------- 过滤器 --------------------------------
 		// 过滤器链子
-		FilterChains: filter(routeName),
+		FilterChains: filter(listenerBo.RouteName),
 	}
 }
 
-func getRouter(routeName string, clusterName string) *route.RouteConfiguration {
+func getRouter(routeBo *bo.RouterBo) *route.RouteConfiguration {
 	return &route.RouteConfiguration{
 		// 路由名称
-		Name: routeName,
+		Name: routeBo.RouteName,
 
 		// ----------------------------------- 虚拟主机 -----------------------------------
 		// 组成路由表的虚拟主机数组
-		VirtualHosts: getInnerHost(routeName, clusterName),
+		VirtualHosts: getInnerHost(routeBo.RouteName, routeBo.RouteBind),
 	}
 }
 
-func getInnerHost(routeName, clusterName string) []*route.VirtualHost {
-	return []*route.VirtualHost{{
-		Name:    routeName,
-		Domains: []string{"*"},
-		Routes: []*route.Route{{
+func getInnerHost(routeName string, routeBinds []bo.RouteClusterBind) []*route.VirtualHost {
+	Routes := []*route.Route{}
+	for _, bind := range routeBinds {
+		Routes = append(Routes, &route.Route{
 			Match: &route.RouteMatch{
 				PathSpecifier: &route.RouteMatch_Prefix{
-					Prefix: "/api/biz/f/",
+					Prefix: bind.RoutePrefix,
 				},
 			},
 			Action: &route.Route_Route{
 				Route: &route.RouteAction{
 					ClusterSpecifier: &route.RouteAction_Cluster{
-						Cluster: clusterName,
+						Cluster: bind.ClusterName,
 					},
 				},
 			},
-		}},
+		})
+	}
+
+	return []*route.VirtualHost{{
+		Name:    routeName,
+		Domains: []string{"*"},
+		Routes:  Routes,
 	}}
 }
 
-func getCluster(clusterName string, upstreamHost string, upstreamPort uint32) *cluster.Cluster {
+func getCluster(clusterBo *bo.ClusterBo) *cluster.Cluster {
 	return &cluster.Cluster{
 		// 集群名称
-		Name: clusterName,
+		Name: clusterBo.ClusterName,
 		// 控制层的连接超时时间
 		ConnectTimeout: durationpb.New(5 * time.Second),
 
 		// 集群类型，这里使用集群名字解析出来的第一个ip，算是逻辑ip
-		ClusterDiscoveryType: &cluster.Cluster_Type{Type: cluster.Cluster_STATIC},
+		ClusterDiscoveryType: &cluster.Cluster_Type{Type: cluster.Cluster_LOGICAL_DNS},
 
 		// 相当于dns，设置此选项是指定STATIC，STRICT_DNS或LOGICAL_DNS集群的成员所必需的
-		LoadAssignment: makeInnerEndpoint(clusterName, upstreamHost, upstreamPort),
+		LoadAssignment: makeInnerEndpoint(clusterBo.ClusterName, clusterBo.UpstreamHost, clusterBo.UpstreamPort),
 
 		// -------------------------- 负载均衡---------------------------------------
 		// 选择主机时的负载均衡策略
