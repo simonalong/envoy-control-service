@@ -6,6 +6,7 @@ import (
 	"github.com/isyscore/isc-gobase/config"
 	"isc-envoy-control-service/router"
 	"isc-envoy-control-service/service"
+	"isc-envoy-control-service/service/xds"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	clusterservice "github.com/envoyproxy/go-control-plane/envoy/service/cluster/v3"
@@ -38,15 +39,6 @@ const (
 	grpcMaxConcurrentStreams = 1000000
 )
 
-const (
-	ClusterName  = "example_proxy_cluster"
-	RouteName    = "local_route"
-	ListenerName = "listener_0"
-	ListenerPort = 10000
-	UpstreamHost = "www.envoyproxy.io"
-	UpstreamPort = 80
-)
-
 func main() {
 	ctx := context.Background()
 
@@ -56,29 +48,9 @@ func main() {
 	// 启动grpc服务
 	runGrpcServer(ctx, service.CacheData, config.GetValueInt("envoy.port"))
 
-	// 测试数据发送
-	//testSendOneData(snapshotCacheData, ctx, &node)
 	router.Register()
 
 	baseServer.Run()
-}
-
-func testSendOneData(snapshotCacheData cache.SnapshotCache, ctx context.Context, node *corev3.Node) {
-	snap, _ := cache.NewSnapshot("2",
-		map[resource.Type][]types.Resource{
-			resource.ListenerType: {service.GetListener(ListenerName, RouteName)},
-			resource.RouteType:    {service.GetRouter(RouteName, ClusterName)},
-			resource.ClusterType:  {service.GetCluster(ClusterName)},
-		},
-	)
-	if err := snap.Consistent(); err != nil {
-		logger.Error("数据持久化异常", err)
-		return
-	}
-
-	if err := snapshotCacheData.SetSnapshot(ctx, node.GetId(), snap); err != nil {
-		logger.Error("数据发送异常", err)
-	}
 }
 
 func runGrpcServer(ctx context.Context, snapshotCacheData cache.SnapshotCache, port int) {
@@ -95,6 +67,7 @@ func runGrpcServer(ctx context.Context, snapshotCacheData cache.SnapshotCache, p
 		}),
 	)
 	grpcServer := grpc.NewServer(grpcOptions...)
+
 	cb := &test.Callbacks{Debug: true}
 	srv := server.NewServer(ctx, snapshotCacheData, cb)
 

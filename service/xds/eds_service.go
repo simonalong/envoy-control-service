@@ -1,4 +1,4 @@
-package service
+package xds
 
 import endpoint "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
 

@@ -13,6 +13,7 @@ import (
 	"github.com/isyscore/isc-gobase/logger"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"isc-envoy-control-service/pojo/bo"
+	"isc-envoy-control-service/service/xds"
 	"time"
 )
 
@@ -68,11 +69,11 @@ func getListener(listenerBo *bo.ListenerBo) *listener.Listener {
 		Name: listenerBo.ListenerName,
 
 		// 监听器地址，必须唯一
-		Address: getListenerAddress(listenerBo.ListenerPort),
+		Address: xds.GetListenerAddress(listenerBo.ListenerPort),
 
 		// -------------------------------- 过滤器 --------------------------------
 		// 过滤器链子
-		FilterChains: filter(listenerBo.RouteName),
+		FilterChains: xds.Filter(listenerBo.RouteName),
 	}
 }
 

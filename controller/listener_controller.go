@@ -70,7 +70,7 @@ func addListenerF(c *gin.Context) {
 	rdxInfo := &bo.RouterBo{
 		RouteName: "f-route",
 		RouteBind: []bo.RouteClusterBind{
-			{ClusterName: "f-cluster", RoutePrefix: "/api/f/cf/ok"},
+			{ClusterName: "f-cluster", RoutePrefix: "/api/f/cf/ok/ok"},
 		},
 	}
 
@@ -88,7 +88,7 @@ func addListenerF(c *gin.Context) {
 	insertData := &bo.InsertBo{
 		Cluster:       cluster,
 		Id:            id,
-		Version:       "10",
+		Version:       "11",
 		ListenerInfos: []types.Resource{listenerInfo},
 		RouteInfos:    []types.Resource{routeInfo},
 		ClusterInfos:  []types.Resource{clusterInfo},

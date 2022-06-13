@@ -1,4 +1,4 @@
-package service
+package xds
 
 import (
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -22,7 +22,7 @@ func GetListener(listenerName string, route string) *listener.Listener {
 		Name: "",
 
 		// 监听器地址，必须唯一
-		Address: getListenerAddress(ListenerPort),
+		Address: GetListenerAddress(ListenerPort),
 
 		// stat_prefix：用于侦听器统计信息的可选前缀
 		StatPrefix: "",
@@ -32,7 +32,7 @@ func GetListener(listenerName string, route string) *listener.Listener {
 
 		// -------------------------------- 过滤器 --------------------------------
 		// 过滤器链子
-		FilterChains: filter(route),
+		FilterChains: Filter(route),
 		// 默认过滤器链
 		DefaultFilterChain: nil,
 		// 监听器过滤器
@@ -85,7 +85,7 @@ func GetListener(listenerName string, route string) *listener.Listener {
 	}
 }
 
-func getListenerAddress(listenerPort uint32) *core.Address {
+func GetListenerAddress(listenerPort uint32) *core.Address {
 	return &core.Address{
 		Address: &core.Address_SocketAddress{
 			SocketAddress: &core.SocketAddress{
@@ -99,7 +99,7 @@ func getListenerAddress(listenerPort uint32) *core.Address {
 	}
 }
 
-func filter(route string) []*listener.FilterChain {
+func Filter(route string) []*listener.FilterChain {
 	return []*listener.FilterChain{{
 		Filters: []*listener.Filter{{
 			Name: wellknown.HTTPConnectionManager,

@@ -1,3 +1,3 @@
-package service
+package xds
 
 // metric service

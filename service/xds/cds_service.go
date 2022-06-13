@@ -1,4 +1,4 @@
-package service
+package xds
 
 import (
 	cluster "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"

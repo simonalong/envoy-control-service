@@ -1,4 +1,4 @@
-package service
+package xds
 
 import (
 	route "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
