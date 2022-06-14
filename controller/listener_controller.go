@@ -23,7 +23,7 @@ func addListenerC(c *gin.Context) {
 	ldxInfo := &bo.ListenerBo{
 		ListenerName: "egress-f",
 		RouteName:    "f-route",
-		ListenerPort: 10000,
+		ListenerPort: 18005,
 	}
 
 	rdxInfo := &bo.RouterBo{
@@ -47,7 +47,7 @@ func addListenerC(c *gin.Context) {
 	insertData := &bo.InsertBo{
 		Cluster:       clusterName,
 		Id:            id,
-		Version:       "12",
+		Version:       "20",
 		ListenerInfos: []types.Resource{listenerInfo},
 		RouteInfos:    []types.Resource{routeInfo},
 		ClusterInfos:  []types.Resource{clusterInfo},

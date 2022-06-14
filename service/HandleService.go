@@ -69,7 +69,7 @@ func getListener(listenerBo *bo.ListenerBo) *listener.Listener {
 		Name: listenerBo.ListenerName,
 
 		// 监听器地址，必须唯一
-		Address: xds.GetListenerAddress(listenerBo.ListenerPort),
+		Address: xds.GetListenerAddress(listenerBo.ListenerHost, listenerBo.ListenerPort),
 
 		// -------------------------------- 过滤器 --------------------------------
 		// 过滤器链子

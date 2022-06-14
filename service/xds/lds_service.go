@@ -22,7 +22,7 @@ func GetListener(listenerName string, route string) *listener.Listener {
 		Name: "",
 
 		// 监听器地址，必须唯一
-		Address: GetListenerAddress(ListenerPort),
+		Address: GetListenerAddress("0.0.0.0", ListenerPort),
 
 		// stat_prefix：用于侦听器统计信息的可选前缀
 		StatPrefix: "",
@@ -85,7 +85,7 @@ func GetListener(listenerName string, route string) *listener.Listener {
 	}
 }
 
-func GetListenerAddress(listenerPort uint32) *core.Address {
+func GetListenerAddress(listenerHost string, listenerPort uint32) *core.Address {
 	return &core.Address{
 		Address: &core.Address_SocketAddress{
 			SocketAddress: &core.SocketAddress{
