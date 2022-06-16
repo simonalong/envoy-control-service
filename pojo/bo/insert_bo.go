@@ -9,12 +9,8 @@ type InsertBo struct {
 	Id      string
 	Version string
 
-	//ListenerInfo *listener.Listener
 	ListenerInfos []types.Resource
-	//RouteInfo    *route.RouteConfiguration
-	RouteInfos []types.Resource
-	//ClusterInfo  *cluster.Cluster
-	ClusterInfos []types.Resource
-	//EndpointInfo  *endpoint.Endpoint
+	RouteInfos    []types.Resource
+	ClusterInfos  []types.Resource
 	EndpointInfos []types.Resource
 }

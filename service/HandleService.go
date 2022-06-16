@@ -10,26 +10,16 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
+	"github.com/isyscore/isc-gobase/isc"
 	"github.com/isyscore/isc-gobase/logger"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"isc-envoy-control-service/pojo/bo"
+	"isc-envoy-control-service/pojo/dto"
 	"isc-envoy-control-service/service/xds"
 	"time"
 )
 
 var CacheData cache.SnapshotCache
-
-func AddCluster(clusterBo *bo.ClusterBo) *cluster.Cluster {
-	return getCluster(clusterBo)
-}
-
-func AddRouter(routeBo *bo.RouterBo) *route.RouteConfiguration {
-	return getRouter(routeBo)
-}
-
-func AddListener(listenerBo *bo.ListenerBo) *listener.Listener {
-	return getListener(listenerBo)
-}
 
 func Send(insertBo *bo.InsertBo) {
 	node := corev3.Node{Id: insertBo.Id, Cluster: insertBo.Cluster}
@@ -63,7 +53,73 @@ func Send(insertBo *bo.InsertBo) {
 	}
 }
 
-func getListener(listenerBo *bo.ListenerBo) *listener.Listener {
+func SendEnvoyData(envoyDataInsert *dto.EnvoyDataInsert) {
+	node := corev3.Node{Id: envoyDataInsert.Id, Cluster: envoyDataInsert.ClusterName}
+
+	ctx := context.Background()
+	resourcesMap := map[resource.Type][]types.Resource{}
+
+	var listeners []types.Resource
+	if len(envoyDataInsert.Listeners) != 0 {
+		for _, info := range envoyDataInsert.Listeners {
+			listeners = append(listeners, AddListener(info))
+		}
+		resourcesMap[resource.ListenerType] = listeners
+	}
+
+	var routers []types.Resource
+	if len(envoyDataInsert.Routers) != 0 {
+		for _, info := range envoyDataInsert.Routers {
+			routers = append(routers, AddRouter(info))
+		}
+		resourcesMap[resource.RouteType] = routers
+	}
+
+	var clusters []types.Resource
+	if len(envoyDataInsert.Clusters) != 0 {
+		for _, info := range envoyDataInsert.Clusters {
+			clusters = append(clusters, AddCluster(info))
+		}
+		resourcesMap[resource.ClusterType] = clusters
+	}
+
+	var endpoints []types.Resource
+	if len(envoyDataInsert.Endpoints) != 0 {
+		for _, info := range envoyDataInsert.Endpoints {
+			endpoints = append(endpoints, addEndpoint(info))
+		}
+		resourcesMap[resource.EndpointType] = endpoints
+	}
+
+	snap, _ := cache.NewSnapshot(isc.ToString(envoyDataInsert.Version), resourcesMap)
+	if err := snap.Consistent(); err != nil {
+		logger.Error("参数检查异常 %v", err)
+		return
+	}
+
+	if err := CacheData.SetSnapshot(ctx, node.GetId(), snap); err != nil {
+		logger.Error("数据发送异常 %v", err)
+	}
+}
+
+func AddListener(listenerBo bo.ListenerBo) *listener.Listener {
+	return getListener(listenerBo)
+}
+
+func AddRouter(routeBo bo.RouterBo) *route.RouteConfiguration {
+	return getRouter(routeBo)
+}
+
+func AddCluster(clusterBo bo.ClusterBo) *cluster.Cluster {
+	return getCluster(clusterBo)
+}
+
+func addEndpoint(endpointBo bo.EndpointBo) *endpoint.Endpoint {
+	// todo
+	return nil
+}
+
+func getListener(listenerBo bo.ListenerBo) *listener.Listener {
 	return &listener.Listener{
 		// 监听器名称
 		Name: listenerBo.ListenerName,
@@ -77,7 +133,7 @@ func getListener(listenerBo *bo.ListenerBo) *listener.Listener {
 	}
 }
 
-func getRouter(routeBo *bo.RouterBo) *route.RouteConfiguration {
+func getRouter(routeBo bo.RouterBo) *route.RouteConfiguration {
 	return &route.RouteConfiguration{
 		// 路由名称
 		Name: routeBo.RouteName,
@@ -114,7 +170,7 @@ func getInnerHost(routeName string, routeBinds []bo.RouteClusterBind) []*route.V
 	}}
 }
 
-func getCluster(clusterBo *bo.ClusterBo) *cluster.Cluster {
+func getCluster(clusterBo bo.ClusterBo) *cluster.Cluster {
 	return &cluster.Cluster{
 		// 集群名称
 		Name: clusterBo.ClusterName,

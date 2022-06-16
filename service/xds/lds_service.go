@@ -86,11 +86,14 @@ func GetListener(listenerName string, route string) *listener.Listener {
 }
 
 func GetListenerAddress(listenerHost string, listenerPort uint32) *core.Address {
+	if listenerHost == "" {
+		listenerHost = "0.0.0.0"
+	}
 	return &core.Address{
 		Address: &core.Address_SocketAddress{
 			SocketAddress: &core.SocketAddress{
 				Protocol: core.SocketAddress_TCP,
-				Address:  "0.0.0.0",
+				Address:  listenerHost,
 				PortSpecifier: &core.SocketAddress_PortValue{
 					PortValue: listenerPort,
 				},

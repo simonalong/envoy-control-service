@@ -37,4 +37,10 @@ base:
     dir: ./logs/
 
 envoy:
-  port: 18000
+  port: 11000
+
+database:
+  username: root
+  password: '123456'
+  host: localhost
+  port: 13306

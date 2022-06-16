@@ -38,4 +38,10 @@ base:
 
 # 给envoy开启的端口
 envoy:
-  port: 18000
+  port: 11000
+
+database:
+  username: root
+  password: '123456'
+  host: mysql-service
+  port: 3306

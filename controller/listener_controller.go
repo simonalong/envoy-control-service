@@ -2,98 +2,295 @@ package controller
 
 import (
 	clusterEnvoy "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
-	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/gin-gonic/gin"
+	"github.com/isyscore/isc-gobase/logger"
 	baseServer "github.com/isyscore/isc-gobase/server"
 	"github.com/isyscore/isc-gobase/server/rsp"
+	"isc-envoy-control-service/dao"
 	"isc-envoy-control-service/pojo/bo"
+	"isc-envoy-control-service/pojo/dto"
 	"isc-envoy-control-service/service"
 )
 
 func ListenerController() {
-	baseServer.Get("listener/add/c", addListenerC)
-	baseServer.Get("listener/add/f", addListenerF)
+	baseServer.Get("add/a", addA)
+	baseServer.Get("add/b", addB)
+	baseServer.Get("add/c", addC)
+	baseServer.Get("add/d", addD)
+	baseServer.Get("add/e", addE)
+	baseServer.Get("add/f", addF)
+	//baseServer.Get("add/f", addListenerF)
+
+	baseServer.Put("add/all", addAll)
 }
 
-// 新增 add
-func addListenerC(c *gin.Context) {
-	clusterName := "default"
-	id := "biz_c"
+func addA(c *gin.Context) {
+	logger.Info("给服务A添加数据层代理")
+	version := dao.GetServiceVersion("biz-envoy-a")
+	logger.Info("A：version=%v", version)
+	service.SendEnvoyData(createA(version))
+	dao.UpdateServiceVersion("biz-envoy-a", version+1)
 
-	ldxInfo := &bo.ListenerBo{
-		ListenerName: "egress-f",
-		RouteName:    "f-route",
-		ListenerPort: 18005,
-	}
-
-	rdxInfo := &bo.RouterBo{
-		RouteName: "f-route",
-		RouteBind: []bo.RouteClusterBind{
-			{ClusterName: "f-cluster", RoutePrefix: "/api/f/cf/ok"},
-		},
-	}
-
-	cdxInfo := &bo.ClusterBo{
-		ClusterName:  "f-cluster",
-		UpstreamHost: "biz_envoy_f",
-		UpstreamPort: 10000,
-		ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
-	}
-
-	listenerInfo := service.AddListener(ldxInfo)
-	routeInfo := service.AddRouter(rdxInfo)
-	clusterInfo := service.AddCluster(cdxInfo)
-
-	insertData := &bo.InsertBo{
-		Cluster:       clusterName,
-		Id:            id,
-		Version:       "20",
-		ListenerInfos: []types.Resource{listenerInfo},
-		RouteInfos:    []types.Resource{routeInfo},
-		ClusterInfos:  []types.Resource{clusterInfo},
-	}
-
-	service.Send(insertData)
 	rsp.SuccessOfStandard(c, "ok")
 }
 
-func addListenerF(c *gin.Context) {
-	cluster := "default"
-	id := "biz_f"
+func addB(c *gin.Context) {
+	logger.Info("给服务B添加数据层代理")
+	versionB := dao.GetServiceVersion("biz-envoy-b")
+	logger.Info("B：version=%v", versionB)
+	service.SendEnvoyData(createA(versionB))
+	dao.UpdateServiceVersion("biz-envoy-b", versionB+1)
 
-	ldxInfo := &bo.ListenerBo{
-		ListenerName: "ingress-f",
-		RouteName:    "f-route",
-		ListenerPort: 10000,
-	}
-
-	rdxInfo := &bo.RouterBo{
-		RouteName: "f-route",
-		RouteBind: []bo.RouteClusterBind{
-			{ClusterName: "f-cluster", RoutePrefix: "/api/f/cf/ok/ok"},
-		},
-	}
-
-	cdxInfo := &bo.ClusterBo{
-		ClusterName:  "f-cluster",
-		UpstreamHost: "127.0.0.1",
-		UpstreamPort: 18005,
-		ClusterType:  clusterEnvoy.Cluster_STATIC,
-	}
-
-	listenerInfo := service.AddListener(ldxInfo)
-	routeInfo := service.AddRouter(rdxInfo)
-	clusterInfo := service.AddCluster(cdxInfo)
-
-	insertData := &bo.InsertBo{
-		Cluster:       cluster,
-		Id:            id,
-		Version:       "11",
-		ListenerInfos: []types.Resource{listenerInfo},
-		RouteInfos:    []types.Resource{routeInfo},
-		ClusterInfos:  []types.Resource{clusterInfo},
-	}
-
-	service.Send(insertData)
 	rsp.SuccessOfStandard(c, "ok")
+}
+
+func addC(c *gin.Context) {
+	logger.Info("给服务C添加数据层代理")
+	version := dao.GetServiceVersion("biz-envoy-c")
+	logger.Info("C：version=%v", version)
+	service.SendEnvoyData(createA(version))
+	dao.UpdateServiceVersion("biz-envoy-c", version+1)
+
+	rsp.SuccessOfStandard(c, "ok")
+}
+
+func addD(c *gin.Context) {
+	logger.Info("给服务D添加数据层代理")
+	version := dao.GetServiceVersion("biz-envoy-d")
+	logger.Info("D：version=%v", version)
+	service.SendEnvoyData(createA(version))
+	dao.UpdateServiceVersion("biz-envoy-d", version+1)
+
+	rsp.SuccessOfStandard(c, "ok")
+}
+
+func addE(c *gin.Context) {
+	logger.Info("给服务E添加数据层代理")
+	version := dao.GetServiceVersion("biz-envoy-e")
+	logger.Info("E：version=%v", version)
+	service.SendEnvoyData(createA(version))
+	dao.UpdateServiceVersion("biz-envoy-e", version+1)
+
+	rsp.SuccessOfStandard(c, "ok")
+}
+
+func addF(c *gin.Context) {
+	logger.Info("给服务F添加数据层代理")
+	versionF := dao.GetServiceVersion("biz-envoy-f")
+	logger.Info("F：version=%v", versionF)
+	service.SendEnvoyData(createA(versionF))
+	dao.UpdateServiceVersion("biz-envoy-f", versionF+1)
+
+	rsp.SuccessOfStandard(c, "ok")
+}
+
+func addAll(c *gin.Context) {
+	logger.Info("给所有的服务添加")
+
+	version := dao.GetServiceVersion("biz-envoy-a")
+	logger.Info("A：version=%v", version)
+	service.SendEnvoyData(createA(version))
+	dao.UpdateServiceVersion("biz-envoy-a", version+1)
+
+	versionB := dao.GetServiceVersion("biz-envoy-b")
+	logger.Info("B：version=%v", versionB)
+	service.SendEnvoyData(createB(versionB))
+	dao.UpdateServiceVersion("biz-envoy-b", version+1)
+
+	versionC := dao.GetServiceVersion("biz-envoy-c")
+	logger.Info("C：version=%v", versionC)
+	service.SendEnvoyData(createC(versionC))
+	dao.UpdateServiceVersion("biz-envoy-c", version+1)
+
+	versionD := dao.GetServiceVersion("biz-envoy-d")
+	logger.Info("D：version=%v", versionD)
+	service.SendEnvoyData(createD(versionD))
+	dao.UpdateServiceVersion("biz-envoy-d", version+1)
+
+	versionE := dao.GetServiceVersion("biz-envoy-e")
+	logger.Info("E：version=%v", versionE)
+	service.SendEnvoyData(createE(versionE))
+	dao.UpdateServiceVersion("biz-envoy-e", version+1)
+
+	//service.SendEnvoyData(createF())
+
+	rsp.SuccessOfStandard(c, "ok")
+}
+
+func createA(version uint32) *dto.EnvoyDataInsert {
+	return &dto.EnvoyDataInsert{
+		ClusterName: "default",
+		Id:          "biz-envoy-a",
+		Version:     version,
+
+		Listeners: []bo.ListenerBo{{
+			ListenerName: "listener_d",
+			RouteName:    "route_d",
+			ListenerPort: 18003,
+		}},
+		Routers: []bo.RouterBo{{
+			RouteName: "route_d",
+			RouteBind: []bo.RouteClusterBind{{
+				ClusterName: "cluster_d",
+				RoutePrefix: "/api/d/",
+			}},
+		}},
+		Clusters: []bo.ClusterBo{{
+			ClusterName:  "cluster_d",
+			UpstreamHost: "biz-envoy-d",
+			UpstreamPort: 10000,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}},
+	}
+}
+func createB(version uint32) *dto.EnvoyDataInsert {
+	return &dto.EnvoyDataInsert{
+		ClusterName: "default",
+		Id:          "biz-envoy-b",
+		Version:     version,
+
+		Listeners: []bo.ListenerBo{{
+			ListenerName: "listener_a",
+			RouteName:    "route_a",
+			ListenerPort: 18000,
+		}, {
+			ListenerName: "listener_d",
+			RouteName:    "route_d",
+			ListenerPort: 18003,
+		}, {
+			ListenerName: "listener_e",
+			RouteName:    "route_e",
+			ListenerPort: 18004,
+		}, {
+			ListenerName: "listener_c",
+			RouteName:    "route_c",
+			ListenerPort: 18002,
+		}},
+
+		Routers: []bo.RouterBo{{
+			RouteName: "route_a",
+			RouteBind: []bo.RouteClusterBind{{
+				ClusterName: "cluster_a",
+				RoutePrefix: "/api/a/",
+			}},
+		}, {
+			RouteName: "route_d",
+			RouteBind: []bo.RouteClusterBind{{
+				ClusterName: "cluster_d",
+				RoutePrefix: "/api/d/",
+			}},
+		}, {
+			RouteName: "route_e",
+			RouteBind: []bo.RouteClusterBind{{
+				ClusterName: "cluster_e",
+				RoutePrefix: "/api/e/",
+			}},
+		}, {
+			RouteName: "route_c",
+			RouteBind: []bo.RouteClusterBind{{
+				ClusterName: "cluster_c",
+				RoutePrefix: "/api/c/",
+			}},
+		}},
+
+		Clusters: []bo.ClusterBo{{
+			ClusterName:  "cluster_a",
+			UpstreamHost: "biz-envoy-a",
+			UpstreamPort: 10000,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}, {
+			ClusterName:  "cluster_d",
+			UpstreamHost: "biz-envoy-d",
+			UpstreamPort: 10000,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}, {
+			ClusterName:  "cluster_e",
+			UpstreamHost: "biz-envoy-e",
+			UpstreamPort: 10000,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}, {
+			ClusterName:  "cluster_c",
+			UpstreamHost: "biz-envoy-c",
+			UpstreamPort: 10000,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}},
+	}
+}
+func createC(version uint32) *dto.EnvoyDataInsert {
+	return &dto.EnvoyDataInsert{
+		ClusterName: "default",
+		Id:          "biz-envoy-c",
+		Version:     version,
+
+		Listeners: []bo.ListenerBo{{
+			ListenerName: "listener_f",
+			RouteName:    "route_f",
+			ListenerPort: 18005,
+		}},
+		Routers: []bo.RouterBo{{
+			RouteName: "route_f",
+			RouteBind: []bo.RouteClusterBind{{
+				ClusterName: "cluster_f",
+				RoutePrefix: "/api/f/",
+			}},
+		}},
+		Clusters: []bo.ClusterBo{{
+			ClusterName:  "cluster_f",
+			UpstreamHost: "biz-envoy-f",
+			UpstreamPort: 10000,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}},
+	}
+}
+func createD(version uint32) *dto.EnvoyDataInsert {
+	return &dto.EnvoyDataInsert{
+		ClusterName: "default",
+		Id:          "biz-envoy-d",
+		Version:     version,
+
+		Listeners: []bo.ListenerBo{{
+			ListenerName: "listener_e",
+			RouteName:    "route_e",
+			ListenerPort: 18004,
+		}},
+		Routers: []bo.RouterBo{{
+			RouteName: "route_e",
+			RouteBind: []bo.RouteClusterBind{{
+				ClusterName: "cluster_e",
+				RoutePrefix: "/api/e/",
+			}},
+		}},
+		Clusters: []bo.ClusterBo{{
+			ClusterName:  "cluster_e",
+			UpstreamHost: "biz-envoy-e",
+			UpstreamPort: 10000,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}},
+	}
+}
+func createE(version uint32) *dto.EnvoyDataInsert {
+	return &dto.EnvoyDataInsert{
+		ClusterName: "default",
+		Id:          "biz-envoy-e",
+		Version:     version,
+
+		Listeners: []bo.ListenerBo{{
+			ListenerName: "listener_f",
+			RouteName:    "route_f",
+			ListenerPort: 18005,
+		}},
+		Routers: []bo.RouterBo{{
+			RouteName: "route_f",
+			RouteBind: []bo.RouteClusterBind{{
+				ClusterName: "cluster_f",
+				RoutePrefix: "/api/f/",
+			}},
+		}},
+		Clusters: []bo.ClusterBo{{
+			ClusterName:  "cluster_f",
+			UpstreamHost: "biz-envoy-f",
+			UpstreamPort: 10000,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}},
+	}
 }

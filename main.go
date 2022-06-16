@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/isyscore/isc-gobase/config"
+	bizConfig "isc-envoy-control-service/config"
 	"isc-envoy-control-service/router"
 	"isc-envoy-control-service/service"
 
@@ -37,6 +38,8 @@ const (
 
 func main() {
 	ctx := context.Background()
+
+	bizConfig.GetDb()
 
 	// 创建数据缓冲处理
 	service.CacheData = cache.NewSnapshotCache(false, cache.IDHash{}, nil)
@@ -83,7 +86,7 @@ func runGrpcServer(ctx context.Context, snapshotCacheData cache.SnapshotCache, p
 	}
 
 	go func() {
-		logger.Info("grpc服务启动监听端口")
+		logger.Info("grpc服务启动监听端口：%v", port)
 		if err = grpcServer.Serve(lis); err != nil {
 			logger.Error("启动grpc异常", err)
 		}
