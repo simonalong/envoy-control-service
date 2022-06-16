@@ -93,12 +93,12 @@ func SendEnvoyData(envoyDataInsert *dto.EnvoyDataInsert) {
 
 	snap, _ := cache.NewSnapshot(isc.ToString(envoyDataInsert.Version), resourcesMap)
 	if err := snap.Consistent(); err != nil {
-		logger.Error("参数检查异常 %v", err)
+		logger.Error("参数检查异常：%v", err)
 		return
 	}
 
 	if err := CacheData.SetSnapshot(ctx, node.GetId(), snap); err != nil {
-		logger.Error("数据发送异常 %v", err)
+		logger.Error("数据发送异常：%v", err)
 	}
 }
 
