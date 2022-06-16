@@ -21,38 +21,6 @@ import (
 
 var CacheData cache.SnapshotCache
 
-func Send(insertBo *bo.InsertBo) {
-	node := corev3.Node{Id: insertBo.Id, Cluster: insertBo.Cluster}
-
-	ctx := context.Background()
-	resourcesMap := map[resource.Type][]types.Resource{}
-	if len(insertBo.ListenerInfos) != 0 {
-		resourcesMap[resource.ListenerType] = insertBo.ListenerInfos
-	}
-
-	if len(insertBo.ListenerInfos) != 0 {
-		resourcesMap[resource.RouteType] = insertBo.RouteInfos
-	}
-
-	if len(insertBo.ListenerInfos) != 0 {
-		resourcesMap[resource.ClusterType] = insertBo.ClusterInfos
-	}
-
-	if len(insertBo.ListenerInfos) != 0 {
-		resourcesMap[resource.EndpointType] = insertBo.EndpointInfos
-	}
-
-	snap, _ := cache.NewSnapshot(insertBo.Version, resourcesMap)
-	if err := snap.Consistent(); err != nil {
-		logger.Error("数据持久化异常", err)
-		return
-	}
-
-	if err := CacheData.SetSnapshot(ctx, node.GetId(), snap); err != nil {
-		logger.Error("数据发送异常", err)
-	}
-}
-
 func SendEnvoyData(envoyDataInsert *dto.EnvoyDataInsert) {
 	node := corev3.Node{Id: envoyDataInsert.Id, Cluster: envoyDataInsert.ClusterName}
 
