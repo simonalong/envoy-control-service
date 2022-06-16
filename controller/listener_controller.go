@@ -13,13 +13,12 @@ import (
 )
 
 func ListenerController() {
-	baseServer.Get("add/a", addA)
-	baseServer.Get("add/b", addB)
-	baseServer.Get("add/c", addC)
-	baseServer.Get("add/d", addD)
-	baseServer.Get("add/e", addE)
-	baseServer.Get("add/f", addF)
-	//baseServer.Get("add/f", addListenerF)
+	baseServer.Put("add/a", addA)
+	baseServer.Put("add/b", addB)
+	baseServer.Put("add/c", addC)
+	baseServer.Put("add/d", addD)
+	baseServer.Put("add/e", addE)
+	baseServer.Put("add/f", addF)
 
 	baseServer.Put("add/all", addAll)
 }
@@ -38,7 +37,7 @@ func addB(c *gin.Context) {
 	logger.Info("给服务B添加数据层代理")
 	versionB := dao.GetServiceVersion("biz-envoy-b")
 	logger.Info("B：version=%v", versionB)
-	service.SendEnvoyData(createA(versionB))
+	service.SendEnvoyData(createB(versionB))
 	dao.UpdateServiceVersion("biz-envoy-b", versionB+1)
 
 	rsp.SuccessOfStandard(c, "ok")
@@ -48,7 +47,7 @@ func addC(c *gin.Context) {
 	logger.Info("给服务C添加数据层代理")
 	version := dao.GetServiceVersion("biz-envoy-c")
 	logger.Info("C：version=%v", version)
-	service.SendEnvoyData(createA(version))
+	service.SendEnvoyData(createC(version))
 	dao.UpdateServiceVersion("biz-envoy-c", version+1)
 
 	rsp.SuccessOfStandard(c, "ok")
@@ -58,7 +57,7 @@ func addD(c *gin.Context) {
 	logger.Info("给服务D添加数据层代理")
 	version := dao.GetServiceVersion("biz-envoy-d")
 	logger.Info("D：version=%v", version)
-	service.SendEnvoyData(createA(version))
+	service.SendEnvoyData(createD(version))
 	dao.UpdateServiceVersion("biz-envoy-d", version+1)
 
 	rsp.SuccessOfStandard(c, "ok")
@@ -68,7 +67,7 @@ func addE(c *gin.Context) {
 	logger.Info("给服务E添加数据层代理")
 	version := dao.GetServiceVersion("biz-envoy-e")
 	logger.Info("E：version=%v", version)
-	service.SendEnvoyData(createA(version))
+	service.SendEnvoyData(createE(version))
 	dao.UpdateServiceVersion("biz-envoy-e", version+1)
 
 	rsp.SuccessOfStandard(c, "ok")
@@ -78,7 +77,7 @@ func addF(c *gin.Context) {
 	logger.Info("给服务F添加数据层代理")
 	versionF := dao.GetServiceVersion("biz-envoy-f")
 	logger.Info("F：version=%v", versionF)
-	service.SendEnvoyData(createA(versionF))
+	service.SendEnvoyData(createF(versionF))
 	dao.UpdateServiceVersion("biz-envoy-f", versionF+1)
 
 	rsp.SuccessOfStandard(c, "ok")
@@ -87,32 +86,12 @@ func addF(c *gin.Context) {
 func addAll(c *gin.Context) {
 	logger.Info("给所有的服务添加")
 
-	version := dao.GetServiceVersion("biz-envoy-a")
-	logger.Info("A：version=%v", version)
-	service.SendEnvoyData(createA(version))
-	dao.UpdateServiceVersion("biz-envoy-a", version+1)
-
-	versionB := dao.GetServiceVersion("biz-envoy-b")
-	logger.Info("B：version=%v", versionB)
-	service.SendEnvoyData(createB(versionB))
-	dao.UpdateServiceVersion("biz-envoy-b", version+1)
-
-	versionC := dao.GetServiceVersion("biz-envoy-c")
-	logger.Info("C：version=%v", versionC)
-	service.SendEnvoyData(createC(versionC))
-	dao.UpdateServiceVersion("biz-envoy-c", version+1)
-
-	versionD := dao.GetServiceVersion("biz-envoy-d")
-	logger.Info("D：version=%v", versionD)
-	service.SendEnvoyData(createD(versionD))
-	dao.UpdateServiceVersion("biz-envoy-d", version+1)
-
-	versionE := dao.GetServiceVersion("biz-envoy-e")
-	logger.Info("E：version=%v", versionE)
-	service.SendEnvoyData(createE(versionE))
-	dao.UpdateServiceVersion("biz-envoy-e", version+1)
-
-	//service.SendEnvoyData(createF())
+	addA(c)
+	addB(c)
+	addC(c)
+	addD(c)
+	addE(c)
+	addF(c)
 
 	rsp.SuccessOfStandard(c, "ok")
 }
@@ -124,9 +103,13 @@ func createA(version uint32) *dto.EnvoyDataInsert {
 		Version:     version,
 
 		Listeners: []bo.ListenerBo{{
-			ListenerName: "listener_d",
+			ListenerName: "listener_egress_d",
 			RouteName:    "route_d",
 			ListenerPort: 18003,
+		}, {
+			ListenerName: "listener_ingress_d",
+			RouteName:    "route_local",
+			ListenerPort: 10000,
 		}},
 		Routers: []bo.RouterBo{{
 			RouteName: "route_d",
@@ -134,11 +117,22 @@ func createA(version uint32) *dto.EnvoyDataInsert {
 				ClusterName: "cluster_d",
 				RoutePrefix: "/api/d/",
 			}},
+		}, {
+			RouteName: "route_local",
+			RouteBind: []bo.RouteClusterBind{{
+				ClusterName: "cluster_local",
+				RoutePrefix: "/api/a/",
+			}},
 		}},
 		Clusters: []bo.ClusterBo{{
 			ClusterName:  "cluster_d",
 			UpstreamHost: "biz-envoy-d",
 			UpstreamPort: 10000,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}, {
+			ClusterName:  "cluster_local",
+			UpstreamHost: "127.0.0.1",
+			UpstreamPort: 18000,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}},
 	}
@@ -150,19 +144,19 @@ func createB(version uint32) *dto.EnvoyDataInsert {
 		Version:     version,
 
 		Listeners: []bo.ListenerBo{{
-			ListenerName: "listener_a",
+			ListenerName: "listener_egress_a",
 			RouteName:    "route_a",
 			ListenerPort: 18000,
 		}, {
-			ListenerName: "listener_d",
+			ListenerName: "listener_egress_d",
 			RouteName:    "route_d",
 			ListenerPort: 18003,
 		}, {
-			ListenerName: "listener_e",
+			ListenerName: "listener_egress_e",
 			RouteName:    "route_e",
 			ListenerPort: 18004,
 		}, {
-			ListenerName: "listener_c",
+			ListenerName: "listener_egress_c",
 			RouteName:    "route_c",
 			ListenerPort: 18002,
 		}},
@@ -223,9 +217,13 @@ func createC(version uint32) *dto.EnvoyDataInsert {
 		Version:     version,
 
 		Listeners: []bo.ListenerBo{{
-			ListenerName: "listener_f",
+			ListenerName: "listener_egress_f",
 			RouteName:    "route_f",
 			ListenerPort: 18005,
+		}, {
+			ListenerName: "listener_ingress_f",
+			RouteName:    "route_local",
+			ListenerPort: 10000,
 		}},
 		Routers: []bo.RouterBo{{
 			RouteName: "route_f",
@@ -233,11 +231,22 @@ func createC(version uint32) *dto.EnvoyDataInsert {
 				ClusterName: "cluster_f",
 				RoutePrefix: "/api/f/",
 			}},
+		}, {
+			RouteName: "route_local",
+			RouteBind: []bo.RouteClusterBind{{
+				ClusterName: "cluster_local",
+				RoutePrefix: "/api/c/",
+			}},
 		}},
 		Clusters: []bo.ClusterBo{{
 			ClusterName:  "cluster_f",
 			UpstreamHost: "biz-envoy-f",
 			UpstreamPort: 10000,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}, {
+			ClusterName:  "cluster_local",
+			UpstreamHost: "127.0.0.1",
+			UpstreamPort: 18002,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}},
 	}
@@ -249,21 +258,41 @@ func createD(version uint32) *dto.EnvoyDataInsert {
 		Version:     version,
 
 		Listeners: []bo.ListenerBo{{
-			ListenerName: "listener_e",
+			ListenerName: "listener_egress_e",
 			RouteName:    "route_e",
 			ListenerPort: 18004,
+		}, {
+			ListenerName: "listener_ingress_a",
+			RouteName:    "route_local",
+			ListenerPort: 10000,
+		}, {
+			ListenerName: "listener_ingress_b",
+			RouteName:    "route_local",
+			ListenerPort: 10000,
 		}},
+
 		Routers: []bo.RouterBo{{
 			RouteName: "route_e",
 			RouteBind: []bo.RouteClusterBind{{
 				ClusterName: "cluster_e",
 				RoutePrefix: "/api/e/",
 			}},
+		}, {
+			RouteName: "route_local",
+			RouteBind: []bo.RouteClusterBind{{
+				ClusterName: "cluster_local",
+				RoutePrefix: "/api/d/",
+			}},
 		}},
 		Clusters: []bo.ClusterBo{{
 			ClusterName:  "cluster_e",
 			UpstreamHost: "biz-envoy-e",
 			UpstreamPort: 10000,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}, {
+			ClusterName:  "cluster_local",
+			UpstreamHost: "127.0.0.1",
+			UpstreamPort: 18003,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}},
 	}
@@ -275,9 +304,13 @@ func createE(version uint32) *dto.EnvoyDataInsert {
 		Version:     version,
 
 		Listeners: []bo.ListenerBo{{
-			ListenerName: "listener_f",
+			ListenerName: "listener_egress_f",
 			RouteName:    "route_f",
 			ListenerPort: 18005,
+		}, {
+			ListenerName: "listener_ingress_e",
+			RouteName:    "route_local",
+			ListenerPort: 10000,
 		}},
 		Routers: []bo.RouterBo{{
 			RouteName: "route_f",
@@ -285,11 +318,49 @@ func createE(version uint32) *dto.EnvoyDataInsert {
 				ClusterName: "cluster_f",
 				RoutePrefix: "/api/f/",
 			}},
+		}, {
+			RouteName: "route_local",
+			RouteBind: []bo.RouteClusterBind{{
+				ClusterName: "cluster_local",
+				RoutePrefix: "/api/e/",
+			}},
 		}},
 		Clusters: []bo.ClusterBo{{
 			ClusterName:  "cluster_f",
 			UpstreamHost: "biz-envoy-f",
 			UpstreamPort: 10000,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}, {
+			ClusterName:  "cluster_local",
+			UpstreamHost: "127.0.0.1",
+			UpstreamPort: 18004,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}},
+	}
+}
+
+func createF(version uint32) *dto.EnvoyDataInsert {
+	return &dto.EnvoyDataInsert{
+		ClusterName: "default",
+		Id:          "biz-envoy-f",
+		Version:     version,
+
+		Listeners: []bo.ListenerBo{{
+			ListenerName: "listener_ingress_f",
+			RouteName:    "route_local",
+			ListenerPort: 10000,
+		}},
+		Routers: []bo.RouterBo{{
+			RouteName: "route_local",
+			RouteBind: []bo.RouteClusterBind{{
+				ClusterName: "cluster_local",
+				RoutePrefix: "/api/f/",
+			}},
+		}},
+		Clusters: []bo.ClusterBo{{
+			ClusterName:  "cluster_local",
+			UpstreamHost: "127.0.0.1",
+			UpstreamPort: 18005,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}},
 	}
