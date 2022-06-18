@@ -9,7 +9,7 @@ WORKDIR /app
 COPY . /app/
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /app
-EXPOSE 31000
+EXPOSE 32400
 
 #image stage
 FROM alpine:latest
