@@ -107,7 +107,7 @@ func createA(version uint32) *dto.EnvoyDataInsert {
 			RouteName:    "route_d",
 			ListenerPort: 18003,
 		}, {
-			ListenerName: "listener_ingress_d",
+			ListenerName: "listener_ingress",
 			RouteName:    "route_local",
 			ListenerPort: 10000,
 		}},
@@ -221,7 +221,7 @@ func createC(version uint32) *dto.EnvoyDataInsert {
 			RouteName:    "route_f",
 			ListenerPort: 18005,
 		}, {
-			ListenerName: "listener_ingress_f",
+			ListenerName: "listener_ingress",
 			RouteName:    "route_local",
 			ListenerPort: 10000,
 		}},
@@ -262,11 +262,7 @@ func createD(version uint32) *dto.EnvoyDataInsert {
 			RouteName:    "route_e",
 			ListenerPort: 18004,
 		}, {
-			ListenerName: "listener_ingress_a",
-			RouteName:    "route_local",
-			ListenerPort: 10000,
-		}, {
-			ListenerName: "listener_ingress_b",
+			ListenerName: "listener_ingress",
 			RouteName:    "route_local",
 			ListenerPort: 10000,
 		}},
@@ -308,7 +304,7 @@ func createE(version uint32) *dto.EnvoyDataInsert {
 			RouteName:    "route_f",
 			ListenerPort: 18005,
 		}, {
-			ListenerName: "listener_ingress_e",
+			ListenerName: "listener_ingress",
 			RouteName:    "route_local",
 			ListenerPort: 10000,
 		}},
@@ -346,7 +342,7 @@ func createF(version uint32) *dto.EnvoyDataInsert {
 		Version:     version,
 
 		Listeners: []bo.ListenerBo{{
-			ListenerName: "listener_ingress_f",
+			ListenerName: "listener_ingress",
 			RouteName:    "route_local",
 			ListenerPort: 10000,
 		}},
