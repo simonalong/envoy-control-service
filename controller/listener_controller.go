@@ -106,22 +106,12 @@ func createA(version uint32) *dto.EnvoyDataInsert {
 			ListenerName: "listener_egress_d",
 			RouteName:    "route_d",
 			ListenerPort: 18003,
-		}, {
-			ListenerName: "listener_ingress",
-			RouteName:    "route_local",
-			ListenerPort: 10000,
 		}},
 		Routers: []bo.RouterBo{{
 			RouteName: "route_d",
 			RouteBind: []bo.RouteClusterBind{{
 				ClusterName: "cluster_d",
 				RoutePrefix: "/api/d/",
-			}},
-		}, {
-			RouteName: "route_local",
-			RouteBind: []bo.RouteClusterBind{{
-				ClusterName: "cluster_local",
-				RoutePrefix: "/api/a/",
 			}},
 		}},
 		Clusters: []bo.ClusterBo{{
@@ -130,9 +120,9 @@ func createA(version uint32) *dto.EnvoyDataInsert {
 			UpstreamPort: 10000,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}, {
-			ClusterName:  "cluster_local",
-			UpstreamHost: "127.0.0.1",
-			UpstreamPort: 18000,
+			ClusterName:  "cluster_jaeger",
+			UpstreamHost: "jaeger-service",
+			UpstreamPort: 9411,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}},
 	}
@@ -220,10 +210,6 @@ func createC(version uint32) *dto.EnvoyDataInsert {
 			ListenerName: "listener_egress_f",
 			RouteName:    "route_f",
 			ListenerPort: 18005,
-		}, {
-			ListenerName: "listener_ingress",
-			RouteName:    "route_local",
-			ListenerPort: 10000,
 		}},
 		Routers: []bo.RouterBo{{
 			RouteName: "route_f",
@@ -231,22 +217,11 @@ func createC(version uint32) *dto.EnvoyDataInsert {
 				ClusterName: "cluster_f",
 				RoutePrefix: "/api/f/",
 			}},
-		}, {
-			RouteName: "route_local",
-			RouteBind: []bo.RouteClusterBind{{
-				ClusterName: "cluster_local",
-				RoutePrefix: "/api/c/",
-			}},
 		}},
 		Clusters: []bo.ClusterBo{{
 			ClusterName:  "cluster_f",
 			UpstreamHost: "biz-envoy-f",
 			UpstreamPort: 10000,
-			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
-		}, {
-			ClusterName:  "cluster_local",
-			UpstreamHost: "127.0.0.1",
-			UpstreamPort: 18002,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}},
 	}
@@ -261,10 +236,6 @@ func createD(version uint32) *dto.EnvoyDataInsert {
 			ListenerName: "listener_egress_e",
 			RouteName:    "route_e",
 			ListenerPort: 18004,
-		}, {
-			ListenerName: "listener_ingress",
-			RouteName:    "route_local",
-			ListenerPort: 10000,
 		}},
 
 		Routers: []bo.RouterBo{{
@@ -273,22 +244,11 @@ func createD(version uint32) *dto.EnvoyDataInsert {
 				ClusterName: "cluster_e",
 				RoutePrefix: "/api/e/",
 			}},
-		}, {
-			RouteName: "route_local",
-			RouteBind: []bo.RouteClusterBind{{
-				ClusterName: "cluster_local",
-				RoutePrefix: "/api/d/",
-			}},
 		}},
 		Clusters: []bo.ClusterBo{{
 			ClusterName:  "cluster_e",
 			UpstreamHost: "biz-envoy-e",
 			UpstreamPort: 10000,
-			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
-		}, {
-			ClusterName:  "cluster_local",
-			UpstreamHost: "127.0.0.1",
-			UpstreamPort: 18003,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}},
 	}
@@ -303,10 +263,6 @@ func createE(version uint32) *dto.EnvoyDataInsert {
 			ListenerName: "listener_egress_f",
 			RouteName:    "route_f",
 			ListenerPort: 18005,
-		}, {
-			ListenerName: "listener_ingress",
-			RouteName:    "route_local",
-			ListenerPort: 10000,
 		}},
 		Routers: []bo.RouterBo{{
 			RouteName: "route_f",
@@ -314,22 +270,11 @@ func createE(version uint32) *dto.EnvoyDataInsert {
 				ClusterName: "cluster_f",
 				RoutePrefix: "/api/f/",
 			}},
-		}, {
-			RouteName: "route_local",
-			RouteBind: []bo.RouteClusterBind{{
-				ClusterName: "cluster_local",
-				RoutePrefix: "/api/e/",
-			}},
 		}},
 		Clusters: []bo.ClusterBo{{
 			ClusterName:  "cluster_f",
 			UpstreamHost: "biz-envoy-f",
 			UpstreamPort: 10000,
-			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
-		}, {
-			ClusterName:  "cluster_local",
-			UpstreamHost: "127.0.0.1",
-			UpstreamPort: 18004,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}},
 	}
@@ -341,23 +286,8 @@ func createF(version uint32) *dto.EnvoyDataInsert {
 		Id:          "biz-envoy-f",
 		Version:     version,
 
-		Listeners: []bo.ListenerBo{{
-			ListenerName: "listener_ingress",
-			RouteName:    "route_local",
-			ListenerPort: 10000,
-		}},
-		Routers: []bo.RouterBo{{
-			RouteName: "route_local",
-			RouteBind: []bo.RouteClusterBind{{
-				ClusterName: "cluster_local",
-				RoutePrefix: "/api/f/",
-			}},
-		}},
-		Clusters: []bo.ClusterBo{{
-			ClusterName:  "cluster_local",
-			UpstreamHost: "127.0.0.1",
-			UpstreamPort: 18005,
-			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
-		}},
+		Listeners: []bo.ListenerBo{},
+		Routers: []bo.RouterBo{},
+		Clusters: []bo.ClusterBo{},
 	}
 }

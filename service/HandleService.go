@@ -32,32 +32,32 @@ func SendEnvoyData(envoyDataInsert *dto.EnvoyDataInsert) {
 		for _, info := range envoyDataInsert.Listeners {
 			listeners = append(listeners, AddListener(info))
 		}
-		resourcesMap[resource.ListenerType] = listeners
 	}
+	resourcesMap[resource.ListenerType] = listeners
 
 	var routers []types.Resource
 	if len(envoyDataInsert.Routers) != 0 {
 		for _, info := range envoyDataInsert.Routers {
 			routers = append(routers, AddRouter(info))
 		}
-		resourcesMap[resource.RouteType] = routers
 	}
+	resourcesMap[resource.RouteType] = routers
 
 	var clusters []types.Resource
 	if len(envoyDataInsert.Clusters) != 0 {
 		for _, info := range envoyDataInsert.Clusters {
 			clusters = append(clusters, AddCluster(info))
 		}
-		resourcesMap[resource.ClusterType] = clusters
 	}
+	resourcesMap[resource.ClusterType] = clusters
 
 	var endpoints []types.Resource
 	if len(envoyDataInsert.Endpoints) != 0 {
 		for _, info := range envoyDataInsert.Endpoints {
 			endpoints = append(endpoints, addEndpoint(info))
 		}
-		resourcesMap[resource.EndpointType] = endpoints
 	}
+	resourcesMap[resource.EndpointType] = endpoints
 
 	snap, _ := cache.NewSnapshot(isc.ToString(envoyDataInsert.Version), resourcesMap)
 	if err := snap.Consistent(); err != nil {
