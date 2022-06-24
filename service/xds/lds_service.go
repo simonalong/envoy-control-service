@@ -3,10 +3,12 @@ package xds
 import (
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	listener "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
+	traceV3 "github.com/envoyproxy/go-control-plane/envoy/config/trace/v3"
 	hcm "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	any "github.com/golang/protobuf/ptypes/any"
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/isyscore/isc-gobase/logger"
 	"google.golang.org/protobuf/types/known/anypb"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
@@ -127,8 +129,33 @@ func getPbst(route string) *any.Any {
 		HttpFilters: []*hcm.HttpFilter{{
 			Name: wellknown.Router,
 		}},
+		GenerateRequestId: &wrappers.BoolValue{Value: true},
+		Tracing: &hcm.HttpConnectionManager_Tracing{
+			Provider: &traceV3.Tracing_Http{
+				Name: "envoy.tracers.zipkin",
+				ConfigType: &traceV3.Tracing_Http_TypedConfig{
+					TypedConfig: getZipkin(),
+				},
+			},
+		},
 	}
 	pbst, err := anypb.New(manager)
+	if err != nil {
+		logger.Error("配置http连接失败")
+	}
+	return pbst
+}
+
+func getZipkin() *any.Any {
+	zip := &traceV3.ZipkinConfig{
+		//这里使用jaeger进行搜集
+		CollectorCluster:         "cluster_jaeger",
+		CollectorEndpoint:        "/api/v2/spans",
+		SharedSpanContext:        &wrappers.BoolValue{Value: false},
+		CollectorEndpointVersion: traceV3.ZipkinConfig_HTTP_JSON,
+	}
+
+	pbst, err := anypb.New(zip)
 	if err != nil {
 		logger.Error("配置http连接失败")
 	}
@@ -145,7 +172,7 @@ func makeConfigSource() *core.ConfigSource {
 			SetNodeOnFirstMessageOnly: true,
 			GrpcServices: []*core.GrpcService{{
 				TargetSpecifier: &core.GrpcService_EnvoyGrpc_{
-					EnvoyGrpc: &core.GrpcService_EnvoyGrpc{ClusterName: "xds_cluster"},
+					EnvoyGrpc: &core.GrpcService_EnvoyGrpc{ClusterName: "cluster_xds"},
 				},
 			}},
 		},

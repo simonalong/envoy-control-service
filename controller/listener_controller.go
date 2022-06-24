@@ -25,60 +25,60 @@ func ListenerController() {
 
 func addA(c *gin.Context) {
 	logger.Info("给服务A添加数据层代理")
-	version := dao.GetServiceVersion("biz-envoy-a")
+	version := dao.GetServiceVersion("biz-a-service")
 	logger.Info("A：version=%v", version)
 	service.SendEnvoyData(createA(version))
-	dao.UpdateServiceVersion("biz-envoy-a", version+1)
+	dao.UpdateServiceVersion("biz-a-service", version+1)
 
 	rsp.SuccessOfStandard(c, "ok")
 }
 
 func addB(c *gin.Context) {
 	logger.Info("给服务B添加数据层代理")
-	versionB := dao.GetServiceVersion("biz-envoy-b")
+	versionB := dao.GetServiceVersion("biz-b-service")
 	logger.Info("B：version=%v", versionB)
 	service.SendEnvoyData(createB(versionB))
-	dao.UpdateServiceVersion("biz-envoy-b", versionB+1)
+	dao.UpdateServiceVersion("biz-b-service", versionB+1)
 
 	rsp.SuccessOfStandard(c, "ok")
 }
 
 func addC(c *gin.Context) {
 	logger.Info("给服务C添加数据层代理")
-	version := dao.GetServiceVersion("biz-envoy-c")
+	version := dao.GetServiceVersion("biz-c-service")
 	logger.Info("C：version=%v", version)
 	service.SendEnvoyData(createC(version))
-	dao.UpdateServiceVersion("biz-envoy-c", version+1)
+	dao.UpdateServiceVersion("biz-c-service", version+1)
 
 	rsp.SuccessOfStandard(c, "ok")
 }
 
 func addD(c *gin.Context) {
 	logger.Info("给服务D添加数据层代理")
-	version := dao.GetServiceVersion("biz-envoy-d")
+	version := dao.GetServiceVersion("biz-d-service")
 	logger.Info("D：version=%v", version)
 	service.SendEnvoyData(createD(version))
-	dao.UpdateServiceVersion("biz-envoy-d", version+1)
+	dao.UpdateServiceVersion("biz-d-service", version+1)
 
 	rsp.SuccessOfStandard(c, "ok")
 }
 
 func addE(c *gin.Context) {
 	logger.Info("给服务E添加数据层代理")
-	version := dao.GetServiceVersion("biz-envoy-e")
+	version := dao.GetServiceVersion("biz-e-service")
 	logger.Info("E：version=%v", version)
 	service.SendEnvoyData(createE(version))
-	dao.UpdateServiceVersion("biz-envoy-e", version+1)
+	dao.UpdateServiceVersion("biz-e-service", version+1)
 
 	rsp.SuccessOfStandard(c, "ok")
 }
 
 func addF(c *gin.Context) {
 	logger.Info("给服务F添加数据层代理")
-	versionF := dao.GetServiceVersion("biz-envoy-f")
+	versionF := dao.GetServiceVersion("biz-f-service")
 	logger.Info("F：version=%v", versionF)
 	service.SendEnvoyData(createF(versionF))
-	dao.UpdateServiceVersion("biz-envoy-f", versionF+1)
+	dao.UpdateServiceVersion("biz-f-service", versionF+1)
 
 	rsp.SuccessOfStandard(c, "ok")
 }
@@ -99,7 +99,7 @@ func addAll(c *gin.Context) {
 func createA(version uint32) *dto.EnvoyDataInsert {
 	return &dto.EnvoyDataInsert{
 		ClusterName: "default",
-		Id:          "biz-envoy-a",
+		Id:          "biz-a-service",
 		Version:     version,
 
 		Listeners: []bo.ListenerBo{{
@@ -116,7 +116,7 @@ func createA(version uint32) *dto.EnvoyDataInsert {
 		}},
 		Clusters: []bo.ClusterBo{{
 			ClusterName:  "cluster_d",
-			UpstreamHost: "biz-envoy-d",
+			UpstreamHost: "biz-d-service",
 			UpstreamPort: 10000,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}, {
@@ -130,7 +130,7 @@ func createA(version uint32) *dto.EnvoyDataInsert {
 func createB(version uint32) *dto.EnvoyDataInsert {
 	return &dto.EnvoyDataInsert{
 		ClusterName: "default",
-		Id:          "biz-envoy-b",
+		Id:          "biz-b-service",
 		Version:     version,
 
 		Listeners: []bo.ListenerBo{{
@@ -179,22 +179,22 @@ func createB(version uint32) *dto.EnvoyDataInsert {
 
 		Clusters: []bo.ClusterBo{{
 			ClusterName:  "cluster_a",
-			UpstreamHost: "biz-envoy-a",
+			UpstreamHost: "biz-a-service",
 			UpstreamPort: 10000,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}, {
 			ClusterName:  "cluster_d",
-			UpstreamHost: "biz-envoy-d",
+			UpstreamHost: "biz-d-service",
 			UpstreamPort: 10000,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}, {
 			ClusterName:  "cluster_e",
-			UpstreamHost: "biz-envoy-e",
+			UpstreamHost: "biz-e-service",
 			UpstreamPort: 10000,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}, {
 			ClusterName:  "cluster_c",
-			UpstreamHost: "biz-envoy-c",
+			UpstreamHost: "biz-c-service",
 			UpstreamPort: 10000,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}},
@@ -203,7 +203,7 @@ func createB(version uint32) *dto.EnvoyDataInsert {
 func createC(version uint32) *dto.EnvoyDataInsert {
 	return &dto.EnvoyDataInsert{
 		ClusterName: "default",
-		Id:          "biz-envoy-c",
+		Id:          "biz-c-service",
 		Version:     version,
 
 		Listeners: []bo.ListenerBo{{
@@ -220,7 +220,7 @@ func createC(version uint32) *dto.EnvoyDataInsert {
 		}},
 		Clusters: []bo.ClusterBo{{
 			ClusterName:  "cluster_f",
-			UpstreamHost: "biz-envoy-f",
+			UpstreamHost: "biz-f-service",
 			UpstreamPort: 10000,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}},
@@ -229,7 +229,7 @@ func createC(version uint32) *dto.EnvoyDataInsert {
 func createD(version uint32) *dto.EnvoyDataInsert {
 	return &dto.EnvoyDataInsert{
 		ClusterName: "default",
-		Id:          "biz-envoy-d",
+		Id:          "biz-d-service",
 		Version:     version,
 
 		Listeners: []bo.ListenerBo{{
@@ -247,7 +247,7 @@ func createD(version uint32) *dto.EnvoyDataInsert {
 		}},
 		Clusters: []bo.ClusterBo{{
 			ClusterName:  "cluster_e",
-			UpstreamHost: "biz-envoy-e",
+			UpstreamHost: "biz-e-service",
 			UpstreamPort: 10000,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}},
@@ -256,7 +256,7 @@ func createD(version uint32) *dto.EnvoyDataInsert {
 func createE(version uint32) *dto.EnvoyDataInsert {
 	return &dto.EnvoyDataInsert{
 		ClusterName: "default",
-		Id:          "biz-envoy-e",
+		Id:          "biz-e-service",
 		Version:     version,
 
 		Listeners: []bo.ListenerBo{{
@@ -273,7 +273,7 @@ func createE(version uint32) *dto.EnvoyDataInsert {
 		}},
 		Clusters: []bo.ClusterBo{{
 			ClusterName:  "cluster_f",
-			UpstreamHost: "biz-envoy-f",
+			UpstreamHost: "biz-f-service",
 			UpstreamPort: 10000,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}},
@@ -283,7 +283,7 @@ func createE(version uint32) *dto.EnvoyDataInsert {
 func createF(version uint32) *dto.EnvoyDataInsert {
 	return &dto.EnvoyDataInsert{
 		ClusterName: "default",
-		Id:          "biz-envoy-f",
+		Id:          "biz-f-service",
 		Version:     version,
 
 		Listeners: []bo.ListenerBo{},
