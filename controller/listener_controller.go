@@ -120,8 +120,8 @@ func createA(version uint32) *dto.EnvoyDataInsert {
 			UpstreamPort: 10000,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}, {
-			ClusterName:  "cluster_jaeger",
-			UpstreamHost: "jaeger-service",
+			ClusterName:  "zipkin",
+			UpstreamHost: "zipkin",
 			UpstreamPort: 9411,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}},

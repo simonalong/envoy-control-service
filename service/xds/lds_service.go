@@ -148,8 +148,8 @@ func getPbst(route string) *any.Any {
 
 func getZipkin() *any.Any {
 	zip := &traceV3.ZipkinConfig{
-		//这里使用jaeger进行搜集
-		CollectorCluster:         "cluster_jaeger",
+		//这里使用zipkin进行搜集
+		CollectorCluster:         "zipkin",
 		CollectorEndpoint:        "/api/v2/spans",
 		SharedSpanContext:        &wrappers.BoolValue{Value: false},
 		CollectorEndpointVersion: traceV3.ZipkinConfig_HTTP_JSON,
