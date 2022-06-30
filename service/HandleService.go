@@ -30,7 +30,7 @@ func SendEnvoyData(envoyDataInsert *dto.EnvoyDataInsert) {
 	var listeners []types.Resource
 	if len(envoyDataInsert.Listeners) != 0 {
 		for _, info := range envoyDataInsert.Listeners {
-			listeners = append(listeners, AddListener(info))
+			listeners = append(listeners, AddListener(info, envoyDataInsert.ClusterName))
 		}
 	}
 	resourcesMap[resource.ListenerType] = listeners
@@ -70,8 +70,8 @@ func SendEnvoyData(envoyDataInsert *dto.EnvoyDataInsert) {
 	}
 }
 
-func AddListener(listenerBo bo.ListenerBo) *listener.Listener {
-	return getListener(listenerBo)
+func AddListener(listenerBo bo.ListenerBo, serviceName string) *listener.Listener {
+	return getListener(listenerBo, serviceName)
 }
 
 func AddRouter(routeBo bo.RouterBo) *route.RouteConfiguration {
@@ -87,7 +87,7 @@ func addEndpoint(endpointBo bo.EndpointBo) *endpoint.Endpoint {
 	return nil
 }
 
-func getListener(listenerBo bo.ListenerBo) *listener.Listener {
+func getListener(listenerBo bo.ListenerBo, serviceName string) *listener.Listener {
 	return &listener.Listener{
 		// 监听器名称
 		Name: listenerBo.ListenerName,
@@ -97,7 +97,7 @@ func getListener(listenerBo bo.ListenerBo) *listener.Listener {
 
 		// -------------------------------- 过滤器 --------------------------------
 		// 过滤器链子
-		FilterChains: xds.Filter(listenerBo.RouteName),
+		FilterChains: xds.Filter(listenerBo.RouteName, serviceName),
 	}
 }
 

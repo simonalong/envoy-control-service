@@ -2,6 +2,7 @@ package xds
 
 import (
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	listener "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
 	traceV3 "github.com/envoyproxy/go-control-plane/envoy/config/trace/v3"
 	hcm "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
@@ -34,7 +35,7 @@ func GetListener(listenerName string, route string) *listener.Listener {
 
 		// -------------------------------- 过滤器 --------------------------------
 		// 过滤器链子
-		FilterChains: Filter(route),
+		FilterChains: Filter(route, ""),
 		// 默认过滤器链
 		DefaultFilterChain: nil,
 		// 监听器过滤器
@@ -104,18 +105,18 @@ func GetListenerAddress(listenerHost string, listenerPort uint32) *core.Address 
 	}
 }
 
-func Filter(route string) []*listener.FilterChain {
+func Filter(route, serviceName string) []*listener.FilterChain {
 	return []*listener.FilterChain{{
 		Filters: []*listener.Filter{{
 			Name: wellknown.HTTPConnectionManager,
 			ConfigType: &listener.Filter_TypedConfig{
-				TypedConfig: getPbst(route),
+				TypedConfig: getPbst(route, serviceName),
 			},
 		}},
 	}}
 }
 
-func getPbst(route string) *any.Any {
+func getPbst(route, serviceName string) *any.Any {
 	// HTTP filter configuration
 	manager := &hcm.HttpConnectionManager{
 		CodecType:  hcm.HttpConnectionManager_AUTO,
@@ -133,13 +134,37 @@ func getPbst(route string) *any.Any {
 		Tracing: &hcm.HttpConnectionManager_Tracing{
 			Provider: &traceV3.Tracing_Http{
 				Name: "envoy.tracers.zipkin",
+				//Name: "envoy.tracers.skywalking",
 				ConfigType: &traceV3.Tracing_Http_TypedConfig{
 					TypedConfig: getZipkin(),
+					//TypedConfig: getSkywalking(serviceName),
 				},
 			},
 		},
 	}
 	pbst, err := anypb.New(manager)
+	if err != nil {
+		logger.Error("配置http连接失败")
+	}
+	return pbst
+}
+
+func getSkywalking(serviceName string) *any.Any {
+	cfg := &traceV3.SkyWalkingConfig{
+		GrpcService: &corev3.GrpcService{
+			TargetSpecifier: &corev3.GrpcService_EnvoyGrpc_{
+				EnvoyGrpc: &corev3.GrpcService_EnvoyGrpc{
+					ClusterName: "cluster_sky",
+				},
+			},
+		},
+		ClientConfig: &traceV3.ClientConfig{
+			ServiceName: serviceName,
+			InstanceName: serviceName,
+		},
+	}
+
+	pbst, err := anypb.New(cfg)
 	if err != nil {
 		logger.Error("配置http连接失败")
 	}
