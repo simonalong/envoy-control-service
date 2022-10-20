@@ -1,6 +1,6 @@
-create database if not exists biz_envoy;
+create database if not exists isc_demo;
 
-use biz_envoy;
+use isc_demo;
 create table if not exists `control_version`(
     `id` bigint(20) not null auto_increment comment '主键',
     `version` int default 0 not null comment '时间戳',

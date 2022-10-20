@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/isyscore/isc-gobase/config"
-	bizConfig "isc-envoy-control-service/config"
 	"isc-envoy-control-service/router"
 	"isc-envoy-control-service/service"
 
@@ -38,8 +37,6 @@ const (
 
 func main() {
 	ctx := context.Background()
-
-	bizConfig.GetDb()
 
 	// 创建数据缓冲处理
 	service.CacheData = cache.NewSnapshotCache(false, cache.IDHash{}, nil)

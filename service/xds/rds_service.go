@@ -67,5 +67,6 @@ func getHost(clusterName string) []*route.VirtualHost {
 				},
 			},
 		}},
+		RateLimits: nil,
 	}}
 }

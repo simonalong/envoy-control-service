@@ -1,36 +1,19 @@
 package config
 
 import (
-	"fmt"
-	"github.com/isyscore/isc-gobase/config"
 	"github.com/isyscore/isc-gobase/logger"
-	"gorm.io/driver/mysql"
+	"github.com/isyscore/isc-gobase/orm"
 	"gorm.io/gorm"
 )
 
 var Db *gorm.DB
 
-func GetDb() *gorm.DB {
-	if Db != nil {
-		return Db
-	}
-	dbCfg := DbConfig{}
-	err := config.GetValueObject("database", &dbCfg)
+func init() {
+	logger.Info("连接数据库")
+	dbTem, err := orm.GetGormDb()
 	if err != nil {
-		logger.Warn("读取db配置异常")
-		return nil
+		logger.Error("连接数据库失败, %v", err.Error())
 	}
-
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/biz_envoy?charset=utf8&parseTime=True&loc=Local", dbCfg.Username, dbCfg.Password, dbCfg.Host, dbCfg.Port)
-	dbTem, _ := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-
+	logger.Info("连接成功")
 	Db = dbTem
-	return Db
-}
-
-type DbConfig struct {
-	Username string
-	Password string
-	Host     string
-	Port     int
 }

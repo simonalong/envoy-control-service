@@ -103,9 +103,15 @@ func createA(version uint32) *dto.EnvoyDataInsert {
 		Version:     version,
 
 		Listeners: []bo.ListenerBo{{
-			ListenerName: "listener_egress_d",
-			RouteName:    "route_d",
-			ListenerPort: 18003,
+			ListenerProto: "http",
+			ListenerName:  "listener_egress_http_d",
+			RouteName:     "route_d",
+			ListenerPort:  18003,
+		}, {
+			ListenerProto: "mysql",
+			ListenerName:  "listener_egress_mysql",
+			ClusterName:   "cluster_mysql",
+			ListenerPort:  3306,
 		}},
 		Routers: []bo.RouterBo{{
 			RouteName: "route_d",
@@ -117,6 +123,11 @@ func createA(version uint32) *dto.EnvoyDataInsert {
 		Clusters: []bo.ClusterBo{{
 			ClusterName:  "cluster_d",
 			UpstreamHost: "biz-d-service",
+			UpstreamPort: 10000,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}, {
+			ClusterName:  "cluster_mysql",
+			UpstreamHost: "biz-mysql",
 			UpstreamPort: 10000,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}, {
@@ -149,6 +160,11 @@ func createB(version uint32) *dto.EnvoyDataInsert {
 			ListenerName: "listener_egress_c",
 			RouteName:    "route_c",
 			ListenerPort: 18002,
+		}, {
+			ListenerProto: "mysql",
+			ListenerName:  "listener_egress_mysql",
+			ClusterName:   "cluster_mysql",
+			ListenerPort:  3306,
 		}},
 
 		Routers: []bo.RouterBo{{
@@ -197,6 +213,11 @@ func createB(version uint32) *dto.EnvoyDataInsert {
 			UpstreamHost: "biz-c-service",
 			UpstreamPort: 10000,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}, {
+			ClusterName:  "cluster_mysql",
+			UpstreamHost: "biz-mysql",
+			UpstreamPort: 10000,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}},
 	}
 }
@@ -210,6 +231,11 @@ func createC(version uint32) *dto.EnvoyDataInsert {
 			ListenerName: "listener_egress_f",
 			RouteName:    "route_f",
 			ListenerPort: 18005,
+		}, {
+			ListenerProto: "redis",
+			ListenerName:  "listener_egress_redis",
+			ClusterName:   "cluster_redis",
+			ListenerPort:  6379,
 		}},
 		Routers: []bo.RouterBo{{
 			RouteName: "route_f",
@@ -221,6 +247,12 @@ func createC(version uint32) *dto.EnvoyDataInsert {
 		Clusters: []bo.ClusterBo{{
 			ClusterName:  "cluster_f",
 			UpstreamHost: "biz-f-service",
+			UpstreamPort: 10000,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}, {
+			ClusterProto: "redis",
+			ClusterName:  "cluster_redis",
+			UpstreamHost: "redis-envoy",
 			UpstreamPort: 10000,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}},
@@ -236,6 +268,11 @@ func createD(version uint32) *dto.EnvoyDataInsert {
 			ListenerName: "listener_egress_e",
 			RouteName:    "route_e",
 			ListenerPort: 18004,
+		}, {
+			ListenerProto: "mysql",
+			ListenerName:  "listener_egress_mysql",
+			ClusterName:   "cluster_mysql",
+			ListenerPort:  3306,
 		}},
 
 		Routers: []bo.RouterBo{{
@@ -248,6 +285,12 @@ func createD(version uint32) *dto.EnvoyDataInsert {
 		Clusters: []bo.ClusterBo{{
 			ClusterName:  "cluster_e",
 			UpstreamHost: "biz-e-service",
+			UpstreamPort: 10000,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}, {
+			ClusterName:  "cluster_mysql",
+			//UpstreamHost: "biz-mysql",
+			UpstreamHost: "mysql-envoy",
 			UpstreamPort: 10000,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}},
@@ -263,6 +306,11 @@ func createE(version uint32) *dto.EnvoyDataInsert {
 			ListenerName: "listener_egress_f",
 			RouteName:    "route_f",
 			ListenerPort: 18005,
+		}, {
+			ListenerProto: "mysql",
+			ListenerName:  "listener_egress_mysql",
+			ClusterName:   "cluster_mysql",
+			ListenerPort:  3306,
 		}},
 		Routers: []bo.RouterBo{{
 			RouteName: "route_f",
@@ -276,6 +324,11 @@ func createE(version uint32) *dto.EnvoyDataInsert {
 			UpstreamHost: "biz-f-service",
 			UpstreamPort: 10000,
 			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}, {
+			ClusterName:  "cluster_mysql",
+			UpstreamHost: "biz-mysql",
+			UpstreamPort: 10000,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
 		}},
 	}
 }
@@ -286,8 +339,19 @@ func createF(version uint32) *dto.EnvoyDataInsert {
 		Id:          "biz-f-service",
 		Version:     version,
 
-		Listeners: []bo.ListenerBo{},
-		Routers: []bo.RouterBo{},
-		Clusters: []bo.ClusterBo{},
+		Listeners: []bo.ListenerBo{{
+			ListenerProto: "mysql",
+			ListenerName:  "listener_egress_mysql",
+			ClusterName:   "cluster_mysql",
+			ListenerPort:  3306,
+		}},
+		Routers:  []bo.RouterBo{},
+		Clusters: []bo.ClusterBo{{
+			ClusterName:  "cluster_mysql",
+			//UpstreamHost: "biz-mysql",
+			UpstreamHost: "mysql-envoy",
+			UpstreamPort: 10000,
+			ClusterType:  clusterEnvoy.Cluster_LOGICAL_DNS,
+		}},
 	}
 }
