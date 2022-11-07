@@ -1,7 +1,7 @@
 package bo
 
 type ListenerBo struct {
-	//http、mysql、redis、mongo、dubbo等，默认http
+	//http、mysql、redis、etcd、mongo、dubbo等，默认http
 	ListenerProto string
 
 	ListenerName string
