@@ -188,7 +188,7 @@ func FilterTCP(route, serviceName string) []*listener.FilterChain {
 func getMysqlFilter() *any.Any {
 	mysqlProxy := &mysqlProxyV3.MySQLProxy{
 		StatPrefix: "mysql",
-		AccessLog:  "/var/log/envoy/egress_mysql.log",
+		AccessLog:  "/var/log/egress_mysql.log",
 	}
 
 	pbst, err := anypb.New(mysqlProxy)
@@ -450,7 +450,7 @@ func getTcpCluster() {
 func getAccessLogEgressHttp() *any.Any {
 	// HTTP filter configuration
 	accessLog := &fileV3.FileAccessLog{
-		Path: "/var/log/envoy/egress_http.log",
+		Path: "/var/log/egress_http.log",
 		AccessLogFormat: &fileV3.FileAccessLog_LogFormat{
 			LogFormat: &corev3.SubstitutionFormatString{
 				Format: &corev3.SubstitutionFormatString_JsonFormat{
@@ -493,7 +493,7 @@ func getAccessLogEgressHttp() *any.Any {
 func getAccessLogEgressMysql() *any.Any {
 	// HTTP filter configuration
 	accessLog := &fileV3.FileAccessLog{
-		Path: "/var/log/envoy/egress_mysql.log",
+		Path: "/var/log/egress_mysql.log",
 		AccessLogFormat: &fileV3.FileAccessLog_LogFormat{
 			LogFormat: &corev3.SubstitutionFormatString{
 				Format: &corev3.SubstitutionFormatString_JsonFormat{
@@ -535,7 +535,7 @@ func getAccessLogEgressMysql() *any.Any {
 
 func GetAccessLogEGress(proto string) *any.Any {
 	accessLog := &fileV3.FileAccessLog{
-		Path: "/var/log/envoy/egress_" + proto + ".log",
+		Path: "/var/log/egress_" + proto + ".log",
 		AccessLogFormat: &fileV3.FileAccessLog_LogFormat{
 			LogFormat: &corev3.SubstitutionFormatString{
 				Format: &corev3.SubstitutionFormatString_JsonFormat{
