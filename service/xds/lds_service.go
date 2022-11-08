@@ -188,7 +188,7 @@ func FilterTCP(route, serviceName string) []*listener.FilterChain {
 func getMysqlFilter() *any.Any {
 	mysqlProxy := &mysqlProxyV3.MySQLProxy{
 		StatPrefix: "mysql",
-		AccessLog:  "/var/log/egress_mysql.log",
+		AccessLog:  "/var/log/envoy_egress_mysql.log",
 	}
 
 	pbst, err := anypb.New(mysqlProxy)
@@ -349,8 +349,9 @@ func getHttpFilter(route string) *any.Any {
 				Name: "envoy.tracers.zipkin",
 				//Name: "envoy.tracers.skywalking",
 				ConfigType: &traceV3.Tracing_Http_TypedConfig{
-					TypedConfig: getZipkin(),
+					//TypedConfig: getgetDataCollectorOfZipkin(),
 					//TypedConfig: getSkywalking(serviceName),
+					TypedConfig: getDataCollectorOfCoreBack(),
 				},
 			},
 			// CustomTags: []*tracingV3.CustomTag{},
@@ -450,7 +451,7 @@ func getTcpCluster() {
 func getAccessLogEgressHttp() *any.Any {
 	// HTTP filter configuration
 	accessLog := &fileV3.FileAccessLog{
-		Path: "/var/log/egress_http.log",
+		Path: "/var/log/envoy_egress_http.log",
 		AccessLogFormat: &fileV3.FileAccessLog_LogFormat{
 			LogFormat: &corev3.SubstitutionFormatString{
 				Format: &corev3.SubstitutionFormatString_JsonFormat{
@@ -493,7 +494,7 @@ func getAccessLogEgressHttp() *any.Any {
 func getAccessLogEgressMysql() *any.Any {
 	// HTTP filter configuration
 	accessLog := &fileV3.FileAccessLog{
-		Path: "/var/log/egress_mysql.log",
+		Path: "/var/log/envoy_egress_mysql.log",
 		AccessLogFormat: &fileV3.FileAccessLog_LogFormat{
 			LogFormat: &corev3.SubstitutionFormatString{
 				Format: &corev3.SubstitutionFormatString_JsonFormat{
@@ -535,7 +536,7 @@ func getAccessLogEgressMysql() *any.Any {
 
 func GetAccessLogEGress(proto string) *any.Any {
 	accessLog := &fileV3.FileAccessLog{
-		Path: "/var/log/egress_" + proto + ".log",
+		Path: "/var/log/envoy_egress_" + proto + ".log",
 		AccessLogFormat: &fileV3.FileAccessLog_LogFormat{
 			LogFormat: &corev3.SubstitutionFormatString{
 				Format: &corev3.SubstitutionFormatString_JsonFormat{
@@ -597,7 +598,7 @@ func getSkywalking(serviceName string) *any.Any {
 	return pbst
 }
 
-func getZipkin() *any.Any {
+func getgetDataCollectorOfZipkin() *any.Any {
 	zip := &traceV3.ZipkinConfig{
 		//这里使用zipkin进行搜集
 		CollectorCluster:         "zipkin",
@@ -607,6 +608,22 @@ func getZipkin() *any.Any {
 	}
 
 	pbst, err := anypb.New(zip)
+	if err != nil {
+		logger.Error("配置http连接失败")
+	}
+	return pbst
+}
+
+func getDataCollectorOfCoreBack() *any.Any {
+	cfg := &traceV3.ZipkinConfig{
+		//这里使用zipkin进行搜集
+		CollectorCluster:         "cluster-core-back",
+		CollectorEndpoint:        "/api/core/back/v1/http/spans",
+		SharedSpanContext:        &wrappers.BoolValue{Value: false},
+		CollectorEndpointVersion: traceV3.ZipkinConfig_HTTP_JSON,
+	}
+
+	pbst, err := anypb.New(cfg)
 	if err != nil {
 		logger.Error("配置http连接失败")
 	}
