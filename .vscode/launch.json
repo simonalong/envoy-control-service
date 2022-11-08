@@ -12,18 +12,6 @@
                 "base.profiles.active": "local"
             },
             "args": []
-        },
-        {
-            "name": "release",
-            "type": "go",
-            "request": "launch",
-            "mode": "debug",
-            //当运行单个文件时{workspaceFolder}可改为{file}
-            "program": "${workspaceFolder}",
-            "env": {
-                
-            },
-            "args": []
-        },
+        }
     ]
 }
